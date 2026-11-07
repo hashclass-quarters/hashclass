@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HashCLASS - Chat</title>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://resource.trickle.so/vendor_lib/unpkg/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
+    <link rel="icon" href="https://app.trickle.so/storage/public/images/usr_1877ca6910000001/ff96661b-0b33-45d8-9670-a9e8d7ca2e11.png">
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    <style type="text/tailwindcss">
+    @layer theme {
+        :root {
+            --primary-color: #8B5CF6;
+            --secondary-color: #F3E8FF;
+        }
+    }
+    @layer base {
+        body {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+    }
+    @layer utilities {
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .chat-messages {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script src="supabase-client.js"></script>
+    <script src="realtime.js"></script>
+    <script type="text/babel" src="utils/database.js"></script>
+    <script type="text/babel" src="utils/database-users.js"></script>
+    <script type="text/babel" src="utils/database-crud.js"></script>
+    <script type="text/babel" src="utils/chat.js"></script>
+    <script type="text/babel" src="components/ChatMessage.js"></script>
+    <script type="text/babel" src="components/ChatInput.js"></script>
+    <script type="text/babel" src="chat-app.js"></script>
+    <script>
+      window.addEventListener('beforeunload', () => {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (currentUser.regNumber) {
+          localStorage.removeItem('chat_opened_' + currentUser.regNumber);
+        }
+      });
+    </script>
+</body>
+</html>

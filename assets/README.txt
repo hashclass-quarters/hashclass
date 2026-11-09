@@ -8,3 +8,5 @@ The build then uses your local copy instead of the old Trickle-hosted link:
   share.jpg     link-preview image (WhatsApp / social sharing)
 
 Missing files are simply skipped (the old link stays).
+
+airtel.png  - Airtel logo shown in the PAY popup (if missing, the word "airtel" in red is shown instead)

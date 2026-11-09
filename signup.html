@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
+    <meta name="darkreader-lock">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HashCLASS - Sign Up</title>
@@ -15,8 +18,8 @@
     <style type="text/tailwindcss">
     @layer theme {
         :root {
-            --primary-color: #8B5CF6;
-            --secondary-color: #F3E8FF;
+            --primary-color: #1D3FD0;
+            --secondary-color: #E8EEFF;
         }
     }
     @layer utilities {
@@ -27,16 +30,18 @@
             min-height: 100vh;
         }
         .bg-library-overlay {
-            background-color: rgba(139, 92, 246, 0.7);
+            background-color: rgba(29, 63, 208, 0.7);
             min-height: 100vh;
         }
     }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body>
     <div id="root"></div>
     <script src="supabase-client.js"></script>
     <script type="text/babel" src="utils/database.js"></script>
+    <script type="text/babel" src="utils/catalog.js"></script>
     <script type="text/babel" src="utils/database-users.js"></script>
     <script type="text/babel" src="utils/database-crud.js"></script>
     <script type="text/babel" src="components/FullNameField.js"></script>
@@ -49,6 +54,8 @@
     <script type="text/babel" src="components/SignupStep1.js"></script>
     <script type="text/babel" src="components/SignupStep2.js"></script>
     <script type="text/babel" src="components/SignupStep3.js"></script>
+    <script type="text/babel" src="components/Fit.js"></script>
+    <script type="text/babel" src="components/AuthShell.js"></script>
     <script type="text/babel" src="signup-app.js"></script>
 </body>
 </html>

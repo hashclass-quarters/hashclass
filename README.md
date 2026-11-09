@@ -55,3 +55,22 @@ The logos still load from Trickle's servers. To host them yourself, put files in
 * Your **existing Trickle data is not copied**. Export each table from Trickle and send it if you want an import written.
 * Tailwind still loads from its CDN (the project's styles rely on its browser mode).
 * Passwords are not reversible: any student who forgot theirs needs the Forgot Password flow or an admin reset.
+
+
+## Years and packages
+Sign-up is open to FIRST, SECOND and THIRD YEAR students. One package is chosen per student (defined in `utils/catalog.js`):
+- First year: AF111 & MT1114 (TZS 10,000), AF111 (6,000), MT1114 (6,000)
+- Second/Third year: AF211+AF212+MS211 (15,000); any two of them (12,000); any single one (7,000). Third-year students see these as **Carry Over Courses**.
+No SQL changes are needed for this.
+
+## Months (payment periods)
+Admin panel -> **Months**: set the START DATE and END DATE of Month 1, 2 and 3 and press SAVE (Founder & CEO and Chief Financial Officer only). The student panel and the payment popups follow these dates: a month that has not started shows UPCOMING, a started month shows PAID / PARTIAL / UNPAID. Until dates are set, students see "NOT STARTED". Re-run `supabase/01_schema.sql` once to add the `month_period` table.
+
+## Deploying on Vercel (important)
+Upload the whole project (not the `dist` folder) to GitHub. `vercel.json` makes Vercel run `node build.js` and publish `dist/`, so pages load as precompiled JavaScript. If the site is slow with a blank white screen at first, Vercel is serving the unbuilt source: in Vercel -> Project Settings -> Build & Development, set Build Command `node build.js`, Output Directory `dist`, then Redeploy.
+
+## Look and feel
+Royal blue + gold theme (colours in `theme.css` and the `--primary-color` variable in each page). Welcome, sign in, sign up, forgot password and dashboard share the layout in `components/AuthShell.js`. Photos used: `assets/students.jpg` (welcome screen) and `assets/udom.jpg` (dashboard footer).
+
+## SQL scripts, in order
+01_schema.sql, 02_storage.sql, 03_create_founder.sql (first setup). Later updates: 04_months.sql (payment months), 05_news_actions.sql (safe likes/comments), 06_faster_login.sql (faster sign-in). 01_schema.sql already contains 04, 05 and 06 for new projects.

@@ -58,22 +58,6 @@ function SignupApp() {
       'Bachelor of Commerce in Information Management'
     ];
 
-    const getPackagesForYear = (year) => {
-      if (year === 'FIRST YEAR') {
-        return [
-          { id: 'AF121', name: 'AF121', price: 10000 },
-          { id: 'ST1208', name: 'ST 1208', price: 5000 },
-          { id: 'IT111', name: 'IT 111', price: 5000 }
-        ];
-      } else if (year === 'SECOND YEAR') {
-        return [
-          { id: 'AF227', name: 'AF227', price: 10000 },
-          { id: 'AF223', name: 'AF223', price: 10000 }
-        ];
-      }
-      return [];
-    };
-
     const handleStep1Next = () => {
       if (!formData.fullName || !formData.university || !formData.yearOfStudy || !formData.course) {
         setErrorMessage('All fields are required');
@@ -119,21 +103,14 @@ function SignupApp() {
       setErrorMessage('');
 
       try {
-        const firstYearPackages = getPackagesForYear('FIRST YEAR');
-        const secondYearPackages = getPackagesForYear('SECOND YEAR');
-        const allPackages = [...firstYearPackages, ...secondYearPackages];
-        
-        const selectedPackages = formData.lessonPackages.map(pkgId => {
-          const pkg = allPackages.find(p => p.id === pkgId);
-          if (!pkg) {
-            console.error('Package not found:', pkgId);
-            return null;
-          }
-          return {
-            id: pkg.id,
-            name: pkg.name,
-            price: pkg.price
-          };
+        // exactly one package, taken from the shared catalog for the chosen year
+        const yearPackages = getPackagesForYear(formData.yearOfStudy);
+        const selectedPackages = formData.lessonPackages.slice(0, 1).map(pkgId => {
+          const pkg = yearPackages.find(p => p.id === pkgId);
+          if (!pkg) return null;
+          const saved = { id: pkg.id, name: pkg.name, price: pkg.price };
+          if (pkg.carryOver) saved.carryOver = true;
+          return saved;
         }).filter(Boolean);
 
         if (selectedPackages.length === 0) {
@@ -171,15 +148,7 @@ function SignupApp() {
     };
 
     return (
-      <div className="min-h-screen bg-library flex items-center justify-center p-4 relative">
-        <div className="fixed inset-0 bg-library-overlay"></div>
-        <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-          <div className="text-center mb-6">
-            <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-16 h-16 mx-auto mb-3" />
-            <h1 className="text-3xl font-bold text-[var(--primary-color)] mb-1">Sign Up</h1>
-            <p className="text-sm text-gray-600">Step {step} of 3</p>
-          </div>
-
+      <AuthShell title="Sign Up" step={step}>
           {step === 1 && (
             <SignupStep1 
               formData={formData}
@@ -205,7 +174,6 @@ function SignupApp() {
             <SignupStep3
               formData={formData}
               setFormData={setFormData}
-              getPackagesForYear={getPackagesForYear}
               onBack={() => setStep(2)}
               onRegister={handleRegister}
               loading={loading}
@@ -213,11 +181,10 @@ function SignupApp() {
           )}
 
           <div className="text-center text-sm mt-6">
-            <span className="text-gray-700">Already have an account? </span>
-            <a href="index.html" className="text-[var(--primary-color)] hover:underline font-semibold">Sign In</a>
+            <span className="text-black">Already have an account? </span>
+            <a href="index.html" className="text-[#1D3FD0] hover:underline font-semibold">Sign In</a>
           </div>
-        </div>
-      </div>
+      </AuthShell>
     );
   } catch (error) {
     console.error('SignupApp error:', error);

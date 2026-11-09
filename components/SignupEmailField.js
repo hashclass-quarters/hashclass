@@ -30,14 +30,17 @@ function SignupEmailField({ value, onChange, error }) {
       return (
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">Email</label>
+          <div className="relative">
+          <div className="icon-mail absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#1D3FD0] pointer-events-none"></div>
           <input
             type="email"
             value={value}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             placeholder="example@gmail.com"
-            className={`w-full px-4 py-3 rounded-lg border-2 ${error ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm`}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border-2 ${error ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm`}
           />
+          </div>
         </div>
       );
   } catch (error) {

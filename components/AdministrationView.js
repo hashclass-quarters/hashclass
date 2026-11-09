@@ -42,7 +42,7 @@ function AdministrationView({ onEdit, onRefresh }) {
       canvas.height = 200;
       const ctx = canvas.getContext('2d');
       
-      const colors = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
+      const colors = ['#1D3FD0', '#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
       const color = colors[firstLetter.charCodeAt(0) % colors.length];
       
       ctx.fillStyle = color;

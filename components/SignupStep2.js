@@ -131,12 +131,15 @@ function SignupStep2({ formData, setFormData, onBack, onNext, loading }) {
             {formData.profilePic && (
               <img src={formData.profilePic} alt="Preview" className="w-16 h-16 rounded-full object-cover border-2 border-[var(--primary-color)] flex-shrink-0" />
             )}
+<div className="relative flex-1">
+              <div className="icon-camera absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#1D3FD0] pointer-events-none"></div>
             <input
               type="file"
               accept="image/*"
               onChange={handlePhotoUpload}
-              className={`flex-1 px-3 py-2 rounded-lg border-2 ${errors.profilePic ? 'border-red-500' : 'border-gray-200'} text-sm focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:bg-[var(--primary-color)] file:text-white file:cursor-pointer hover:file:bg-[var(--accent-color)]`}
+              className={`w-full pl-11 pr-3 py-2 rounded-lg border-2 ${errors.profilePic ? 'border-red-500' : 'border-gray-200'} text-sm focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:bg-[var(--primary-color)] file:text-white file:cursor-pointer hover:file:bg-[var(--accent-color)]`}
             />
+            </div>
           </div>
           {errors.profilePic && <p className="text-red-500 text-xs mt-1">{errors.profilePic}</p>}
         </div>

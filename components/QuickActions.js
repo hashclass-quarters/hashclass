@@ -67,28 +67,27 @@ function QuickActions({ onBlockedClick }) {
       { label: 'PAYMENT', icon: 'credit-card', blocked: false },
       { label: 'ATTENDANCE', icon: 'calendar-check', blocked: false },
       { label: 'GRADE', icon: 'award', blocked: true },
-      { label: 'AWARDS', icon: 'trophy', blocked: true },
       { label: 'CHAT', icon: 'message-circle', blocked: false }
     ];
 
     return (
       <>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-5 gap-2 sm:gap-3">
           {actions.map(action => (
             <button 
               key={action.label} 
               onClick={() => handleAction(action)} 
-              className="bg-white rounded-lg shadow p-4 flex flex-col items-center gap-2 hover:bg-gray-50 relative"
+              className="hc-tile px-0.5 py-2.5 flex flex-col items-center gap-1.5 relative"
             >
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                <div className={`icon-${action.icon} text-xl text-green-600`}></div>
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ background: '#DFF5EA' }}>
+                <div className={`icon-${action.icon} text-lg sm:text-xl`} style={{ color: '#1F9D6B' }}></div>
               </div>
               {action.label === 'CHAT' && unreadCount > 0 && (
-                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <div className="absolute -top-1 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </div>
               )}
-              <span className="text-xs font-semibold text-gray-700">{action.label}</span>
+              <span className="text-[9px] sm:text-[11px] leading-none font-bold text-[#0F1B4D] tracking-tight">{action.label === 'ATTENDANCE' ? 'ATTEND' : action.label}</span>
             </button>
           ))}
         </div>
@@ -102,9 +101,8 @@ function QuickActions({ onBlockedClick }) {
               {user.lessonPackages && user.lessonPackages.length > 0 ? (
                 <div className="space-y-3">
                   {(() => {
-                    const firstYearPackages = ['AF121', 'ST1208', 'IT111'];
-                    const regularPackages = user.lessonPackages.filter(pkg => !firstYearPackages.includes(pkg.id));
-                    const carryOverPackages = user.lessonPackages.filter(pkg => firstYearPackages.includes(pkg.id));
+                    const regularPackages = user.lessonPackages.filter(pkg => !pkg.carryOver);
+                    const carryOverPackages = user.lessonPackages.filter(pkg => pkg.carryOver);
                     
                     return (
                       <>
@@ -118,7 +116,7 @@ function QuickActions({ onBlockedClick }) {
                         ))}
                         {carryOverPackages.length > 0 && (
                           <>
-                            <p className="text-sm font-semibold text-gray-600 mt-2">Carry Over</p>
+                            <p className="text-sm font-semibold text-gray-600 mt-2">Carry Over Courses</p>
                             {carryOverPackages.map((pkg, idx) => (
                               <div key={`co-${idx}`} className="bg-gray-50 rounded-lg p-4">
                                 <div className="flex justify-between items-center">

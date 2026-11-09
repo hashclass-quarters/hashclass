@@ -1,6 +1,9 @@
 <html lang="en">
 
 <head>
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
+    <meta name="darkreader-lock">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HashCLASS</title>
@@ -21,9 +24,9 @@
     <style type="text/tailwindcss">
         @layer theme {
         :root {
-            --primary-color: #8B5CF6;
-            --secondary-color: #F3E8FF;
-            --accent-color: #A78BFA;
+            --primary-color: #1D3FD0;
+            --secondary-color: #E8EEFF;
+            --accent-color: #3B63F0;
             --text-dark: #1F2937;
             --text-light: #6B7280;
         }
@@ -43,7 +46,7 @@
             min-height: 100vh;
         }
         .bg-library-overlay {
-            background-color: rgba(139, 92, 246, 0.7);
+            background-color: rgba(29, 63, 208, 0.7);
             min-height: 100vh;
         }
     }
@@ -51,6 +54,7 @@
     <link rel="icon" href="https://app.trickle.so/storage/public/images/usr_1877ca6910000001/ff96661b-0b33-45d8-9670-a9e8d7ca2e11.png">
     <meta property="og:image" content="https://app.trickle.so/storage/app/1000816181.jpg">
     <meta name="twitter:image" content="https://app.trickle.so/storage/app/1000816181.jpg">
+    <link rel="stylesheet" href="theme.css">
 </head>
 
 <body>
@@ -66,6 +70,8 @@
     <script type="text/babel" src="components/PasswordField.js"></script>
     <script type="text/babel" src="components/RegistrationField.js"></script>
     <script type="text/babel" src="components/ContactIcons.js"></script>
+    <script type="text/babel" src="components/Fit.js"></script>
+    <script type="text/babel" src="components/AuthShell.js"></script>
     <script type="text/babel" src="app.js"></script>
 
 

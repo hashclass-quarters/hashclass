@@ -13,8 +13,8 @@ function ContactIcons() {
     };
 
     return (
-      <div className="relative z-10 mt-6 text-center" data-name="contact-icons" data-file="components/ContactIcons.js">
-        <p className="text-sm text-white mb-3 drop-shadow-md">Check us on</p>
+      <div className="relative z-10 mt-2 text-center" data-name="contact-icons" data-file="components/ContactIcons.js">
+        <p className="text-sm text-gray-600 mb-3">Check us on</p>
         <div className="flex items-center justify-center gap-4">
           <button 
             onClick={handlePhone}

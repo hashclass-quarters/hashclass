@@ -40,7 +40,7 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
 
 // static files
-for (const f of ['sitemap.xml']) if (fs.existsSync(path.join(SRC, f))) fs.copyFileSync(path.join(SRC, f), path.join(OUT, f));
+for (const f of ['sitemap.xml', 'theme.css']) if (fs.existsSync(path.join(SRC, f))) fs.copyFileSync(path.join(SRC, f), path.join(OUT, f));
 if (fs.existsSync(path.join(SRC, 'assets'))) fs.cpSync(path.join(SRC, 'assets'), path.join(OUT, 'assets'), { recursive: true });
 for (const f of ['supabase-client.js', 'realtime.js']) {
   const code = esbuild.transformSync(fs.readFileSync(path.join(SRC, f), 'utf8'), { minify: true, target: 'es2018' }).code;

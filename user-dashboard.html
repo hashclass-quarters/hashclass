@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
+    <meta name="darkreader-lock">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HashCLASS - Dashboard</title>
@@ -15,22 +18,27 @@
     <style type="text/tailwindcss">
     @layer theme {
         :root {
-            --primary-color: #8B5CF6;
-            --secondary-color: #F3E8FF;
+            --primary-color: #1D3FD0;
+            --secondary-color: #E8EEFF;
         }
     }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body>
     <div id="root"></div>
     <script src="supabase-client.js"></script>
     <script src="realtime.js"></script>
     <script type="text/babel" src="utils/database.js"></script>
+    <script type="text/babel" src="utils/catalog.js"></script>
+    <script type="text/babel" src="utils/months.js"></script>
+    <script type="text/babel" src="components/TutorBanner.js"></script>
     <script type="text/babel" src="utils/database-users.js"></script>
     <script type="text/babel" src="utils/database-crud.js"></script>
     <script type="text/babel" src="utils/news.js"></script>
     <script type="text/babel" src="utils/dateTime.js"></script>
     <script type="text/babel" src="utils/attendance.js"></script>
+    <script type="text/babel" src="components/Fit.js"></script>
     <script type="text/babel" src="components/UserNavbar.js"></script>
     <script type="text/babel" src="components/UserProfile.js"></script>
     <script type="text/babel" src="components/PaymentDetailsPopup.js"></script>

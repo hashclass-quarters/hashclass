@@ -19,7 +19,9 @@ class ErrorBoundary extends React.Component {
 
 function UserDashboardApp() {
   try {
+    const desktop = useIsDesktop();
     const [user, setUser] = React.useState(null);
+    const [, setMonthsVersion] = React.useState(0);
     const [menuOpen, setMenuOpen] = React.useState(false);
     const [newsPosts, setNewsPosts] = React.useState([]);
     const [showWelcome, setShowWelcome] = React.useState(true);
@@ -41,6 +43,7 @@ function UserDashboardApp() {
       
       setUser(currentUser);
       loadUserData(currentUser.regNumber);
+      loadMonthPeriods().then(() => setMonthsVersion(v => v + 1)).catch(e => console.error('Months error:', e));
       
       const updateOnlineStatus = () => {
         localStorage.setItem('user_online_' + currentUser.regNumber, Date.now());
@@ -125,7 +128,7 @@ function UserDashboardApp() {
     if (!user) return null;
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={showRecordAttendance ? 'min-h-screen' : 'h-[100dvh] flex flex-col overflow-hidden'} style={{ background: '#EEF2FF' }}>
         <UserNavbar 
           menuOpen={menuOpen} 
           setMenuOpen={setMenuOpen} 
@@ -136,16 +139,45 @@ function UserDashboardApp() {
         {showRecordAttendance ? (
           <RecordAttendanceView />
         ) : (
-        <div className="max-w-2xl mx-auto p-4 space-y-4">
-          <UserProfile user={user} onClick={(e) => { e.stopPropagation(); setShowAccount(true); }} />
-          <QuickActions onBlockedClick={handleBlockedClick} />
-          <div>
-            <h2 className="text-xl font-bold mb-3">Latest News</h2>
+        desktop ? (
+        <div className="max-w-[1280px] w-full mx-auto px-6 py-5 flex-1 min-h-0 flex gap-6" data-name="dashboard-desktop">
+          <aside className="shrink-0 flex flex-col min-h-0" style={{ width: 'clamp(380px,32vw,460px)' }}>
+            <ShrinkToFit maxRatio={1}>
+              <div className="space-y-4">
+                <UserProfile user={user} onClick={(e) => { e.stopPropagation(); setShowAccount(true); }} />
+                <TutorBanner />
+                <QuickActions onBlockedClick={handleBlockedClick} />
+              </div>
+            </ShrinkToFit>
+          </aside>
+          <section className="flex-1 min-w-0 min-h-0 flex flex-col hc-card p-6" style={{ borderTop: '4px solid #F5B400' }}>
+            <h2 className="text-2xl font-extrabold mb-4 text-[#0F1B4D] flex items-center gap-3 shrink-0">Latest News <span className="h-1.5 w-12 rounded-full" style={{ background: '#F5B400' }}></span></h2>
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-2">
+              {newsPosts.map(post => (
+                <NewsPost key={post.objectId} post={post} user={user} onRefresh={loadNews} />
+              ))}
+            </div>
+          </section>
+        </div>
+        ) : (
+        <div className="max-w-2xl w-full mx-auto px-4 pt-3 flex-1 min-h-0 flex flex-col gap-3">
+          <ShrinkToFit maxRatio={0.66}>
+            <div className="space-y-3">
+              <UserProfile user={user} onClick={(e) => { e.stopPropagation(); setShowAccount(true); }} />
+              <TutorBanner />
+              <QuickActions onBlockedClick={handleBlockedClick} />
+            </div>
+          </ShrinkToFit>
+          <div className="flex-1 min-h-0 flex flex-col">
+            <h2 className="text-xl font-extrabold mb-3 text-[#0F1B4D] flex items-center gap-2 shrink-0">Latest News <span className="h-1 w-8 rounded-full" style={{ background: '#F5B400' }}></span></h2>
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pb-4 pr-0.5" style={{ WebkitOverflowScrolling: 'touch' }}>
             {newsPosts.map(post => (
               <NewsPost key={post.objectId} post={post} user={user} onRefresh={loadNews} />
             ))}
+            </div>
           </div>
         </div>
+        )
         )}
         {showWelcome && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

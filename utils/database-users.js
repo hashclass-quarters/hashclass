@@ -1,5 +1,23 @@
 // ----- shaping helpers -------------------------------------------------
 
+// Single-course packages used to cost 6,500; they are now 7,000. Older records are shown at the new
+// price (months that are already fully paid keep what was actually charged).
+const OLD_SINGLE_PRICE = 6500, NEW_SINGLE_PRICE = 7000;
+function fixOldPackagePrice(pkg) {
+  return pkg && pkg.price === OLD_SINGLE_PRICE ? Object.assign({}, pkg, { price: NEW_SINGLE_PRICE }) : pkg;
+}
+function fixOldMonthlyPayments(mp) {
+  if (!mp || typeof mp !== 'object') return mp;
+  const out = {};
+  Object.keys(mp).forEach(k => {
+    const m = mp[k];
+    if (m && m.price === OLD_SINGLE_PRICE && m.status !== 'PAID') {
+      out[k] = Object.assign({}, m, { price: NEW_SINGLE_PRICE, balance: NEW_SINGLE_PRICE - (m.amountPaid || 0) });
+    } else out[k] = m;
+  });
+  return out;
+}
+
 function shapeRegisteredUser(item) {
   const d = item.objectData || {};
   let lessonPackages = null;
@@ -13,6 +31,8 @@ function shapeRegisteredUser(item) {
     lessonPackage = single;
     lessonPackages = Array.isArray(single) ? single : (single ? [single] : null);
   }
+  if (lessonPackages) lessonPackages = lessonPackages.map(fixOldPackagePrice);
+  if (lessonPackage && !Array.isArray(lessonPackage)) lessonPackage = fixOldPackagePrice(lessonPackage);
 
   return {
     objectId: item.objectId,
@@ -29,7 +49,7 @@ function shapeRegisteredUser(item) {
     paid: d.paid || false,
     amountPaid: d.amountPaid || 0,
     paymentStatus: d.paymentStatus || (d.paid ? 'PAID' : 'UNPAID'),
-    monthlyPayments: parseJsonField(d.monthlyPayments, null)
+    monthlyPayments: fixOldMonthlyPayments(parseJsonField(d.monthlyPayments, null))
   };
 }
 

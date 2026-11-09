@@ -112,7 +112,7 @@ function AccountView({ user, onClose, onPasswordChange }) {
               <>
                 {user.lessonPackages.map((pkg, idx) => (
                   <div key={idx} className="flex justify-between items-center py-1 border-b last:border-b-0">
-                    <span className="text-sm">{pkg.name}</span>
+                    <span className="text-sm">{packageLabel(pkg)}</span>
                     <span className="text-sm text-[var(--primary-color)]">TZS {pkg.price.toLocaleString()}</span>
                   </div>
                 ))}
@@ -140,14 +140,10 @@ function AccountView({ user, onClose, onPasswordChange }) {
             <div className="mt-3 space-y-1">
               <p className="font-semibold text-sm">Payment Status (Current Month):</p>
               {(() => {
-                const getCurrentMonth = () => {
-                  const startDate = new Date('2026-04-18');
-                  const today = new Date();
-                  const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                  return Math.floor(daysDiff / 28) + 1;
-                };
                 const currentMonth = getCurrentMonth();
                 let status = 'UNPAID';
+                if (currentMonth === 0) return <div className="text-xs text-gray-500">Not started yet</div>;
+                if (currentMonth === 4) return <div className="text-xs text-gray-500">All months completed</div>;
                 
                 if (user.monthlyPayments) {
                   const payments = typeof user.monthlyPayments === 'string' ? JSON.parse(user.monthlyPayments) : user.monthlyPayments;

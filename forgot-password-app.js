@@ -30,14 +30,7 @@ function ForgotPasswordApp() {
   };
 
   return (
-    <div className="min-h-screen bg-library flex items-center justify-center p-4 relative">
-      <div className="fixed inset-0 bg-library-overlay"></div>
-      <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-20 h-20 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-[var(--primary-color)] mb-2">Forgot Password</h1>
-          <p className="text-gray-600 text-sm">Enter your registration number</p>
-        </div>
+    <AuthShell title="Forgot Password" subtitle="Enter your registration number" onBack={() => (window.location.href = 'index.html')}>
         {message && (
           <div className={`mb-4 p-3 rounded-lg ${isSuccess ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
             {message}
@@ -51,8 +44,7 @@ function ForgotPasswordApp() {
           <span className="text-gray-700">Remember your password? </span>
           <a href="index.html" className="text-[var(--primary-color)] hover:underline font-semibold">Sign In</a>
         </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
 

@@ -93,7 +93,8 @@ function App() {
           return;
         }
 
-        const user = await getRegisteredUser(result.user.regNumber);
+        // app_login already returns the full record, so there is no second request
+        const user = shapeRegisteredUser({ objectId: result.objectId, objectData: result.user });
         localStorage.setItem('currentUser', JSON.stringify({ ...user, isAdmin: false }));
         localStorage.setItem('user_online_' + user.regNumber, Date.now());
         window.location.href = 'user-dashboard.html';
@@ -107,15 +108,8 @@ function App() {
     };
 
     return (
-      <div className="min-h-screen bg-library flex flex-col items-center justify-center p-4 relative" data-name="app" data-file="app.js">
-        <div className="fixed inset-0 bg-library-overlay"></div>
-        <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-          <div className="text-center mb-8">
-            <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="HashCLASS Logo" className="w-20 h-20 mx-auto mb-4" />
-            <h1 className="text-4xl font-bold text-[var(--primary-color)] mb-2">HashCLASS</h1>
-            <p className="text-[var(--text-light)] text-sm italic">The Golden Minds</p>
-          </div>
-
+      <>
+        <AuthShell title="Sign In" subtitle="Welcome back, Genius!" roomy>
           <ErrorMessage message={errorMessage} />
 
           <div className="space-y-4">
@@ -131,28 +125,27 @@ function App() {
               error={errors.password}
               label="Password"
             />
+          <div className="flex justify-end -mt-1">
+            <a href="forgot-password.html" className="text-[#1D3FD0] hover:underline text-sm font-semibold">
+              Forgot Password?
+            </a>
           </div>
 
           <button
             onClick={handleSignIn}
             disabled={loading}
-            className="w-full mt-6 bg-[var(--primary-color)] text-white py-3 rounded-lg font-semibold hover:bg-[var(--accent-color)] transition-colors disabled:opacity-50"
+            className="w-full bg-[var(--primary-color)] text-white py-3.5 rounded-full text-lg font-semibold shadow-lg shadow-blue-700/30 hover:opacity-95 transition disabled:opacity-50"
           >
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
-
-          <div className="mt-4 text-center">
-            <a href="forgot-password.html" className="text-[var(--primary-color)] hover:underline text-sm">
-              Forgot Password?
-            </a>
           </div>
 
-          <div className="mt-4 text-center text-sm">
-            <span className="text-gray-700">Don't have an account? </span>
-            <a href="signup.html" className="text-[var(--primary-color)] hover:underline font-semibold">Sign Up</a>
+          <div className="text-center text-sm">
+            <span className="text-black">Don't have an account? </span>
+            <a href="signup.html" className="text-[#1D3FD0] hover:underline font-semibold">Sign Up</a>
           </div>
-        </div>
-        <ContactIcons />
+          <ContactIcons />
+        </AuthShell>
         {showSuccess && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl p-6 max-w-sm mx-4">
@@ -161,7 +154,7 @@ function App() {
             </div>
           </div>
         )}
-      </div>
+      </>
     );
   } catch (error) {
     console.error('App component error:', error);

@@ -142,7 +142,7 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
         <div 
           onClick={() => onReplyClick && onReplyClick(message.replyTo.id)}
           className={`mb-2 p-2 rounded-lg text-xs cursor-pointer border-l-4 ${isOwnMessage ? 'border-white' : 'border-[var(--primary-color)]'}`}
-          style={{ backgroundColor: isOwnMessage ? 'rgba(255, 255, 255, 0.3)' : 'rgba(139, 92, 246, 0.25)' }}
+          style={{ backgroundColor: isOwnMessage ? 'rgba(255, 255, 255, 0.3)' : 'rgba(29, 63, 208, 0.25)' }}
         >
                 <p className="font-semibold text-xs opacity-75">{message.replyTo.userName}</p>
                 {message.replyTo.type === 'image' ? (

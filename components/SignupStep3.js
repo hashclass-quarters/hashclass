@@ -1,21 +1,14 @@
-function SignupStep3({ formData, setFormData, getPackagesForYear, onBack, onRegister, loading }) {
+function SignupStep3({ formData, setFormData, onBack, onRegister, loading }) {
   try {
-    const [showCarryOver, setShowCarryOver] = React.useState(false);
     const [errors, setErrors] = React.useState({});
     const packages = getPackagesForYear(formData.yearOfStudy);
-    const carryOverPackages = formData.yearOfStudy === 'SECOND YEAR' ? getPackagesForYear('FIRST YEAR') : [];
-    
-    const allAvailablePackages = [...packages, ...carryOverPackages];
-    const totalPrice = formData.lessonPackages.reduce((sum, pkgId) => {
-      const pkg = allAvailablePackages.find(p => p.id === pkgId);
-      return sum + (pkg ? pkg.price : 0);
-    }, 0);
+    const sectionTitle = packageSectionTitle(formData.yearOfStudy);
+    const selected = packages.find(p => formData.lessonPackages.includes(p.id));
+    const totalPrice = selected ? selected.price : 0;
 
-    const handlePackageToggle = (pkgId) => {
-      const newPackages = formData.lessonPackages.includes(pkgId)
-        ? formData.lessonPackages.filter(id => id !== pkgId)
-        : [...formData.lessonPackages, pkgId];
-      setFormData({ ...formData, lessonPackages: newPackages });
+    // only one package can be chosen
+    const handlePackageSelect = (pkgId) => {
+      setFormData({ ...formData, lessonPackages: [pkgId] });
       if (errors.lessonPackages) setErrors({ ...errors, lessonPackages: '' });
     };
 
@@ -23,7 +16,7 @@ function SignupStep3({ formData, setFormData, getPackagesForYear, onBack, onRegi
       const newErrors = {};
       
       if (formData.lessonPackages.length === 0) {
-        newErrors.lessonPackages = 'Please select at least one lesson package';
+        newErrors.lessonPackages = 'Please select one package';
       }
       
       if (!formData.password) {
@@ -50,8 +43,11 @@ function SignupStep3({ formData, setFormData, getPackagesForYear, onBack, onRegi
     return (
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-800 mb-2">Lesson Packages</label>
+          <label className="block text-sm font-semibold text-gray-800 mb-2">{sectionTitle}</label>
           <div className={`border-2 ${errors.lessonPackages ? 'border-red-500' : 'border-gray-200'} rounded-xl p-3 bg-gradient-to-br from-[var(--secondary-color)] to-white shadow-sm`}>
+            {packages.length === 0 && (
+              <p className="text-sm text-gray-600 p-2">Go back and choose your year of study first.</p>
+            )}
             <div className="space-y-2">
               {packages.map(pkg => (
                 <label 
@@ -63,9 +59,10 @@ function SignupStep3({ formData, setFormData, getPackagesForYear, onBack, onRegi
                   }`}
                 >
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="lessonPackage"
                     checked={formData.lessonPackages.includes(pkg.id)}
-                    onChange={() => handlePackageToggle(pkg.id)}
+                    onChange={() => handlePackageSelect(pkg.id)}
                     className="w-5 h-5"
                   />
                   <div className="flex-1 flex items-center justify-between">
@@ -75,45 +72,6 @@ function SignupStep3({ formData, setFormData, getPackagesForYear, onBack, onRegi
                 </label>
               ))}
             </div>
-            
-            {formData.yearOfStudy === 'SECOND YEAR' && (
-              <div className="mt-3 pt-3 border-t border-gray-300">
-                <button
-                  type="button"
-                  onClick={() => setShowCarryOver(!showCarryOver)}
-                  className="w-full flex items-center justify-between p-2 bg-white rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-sm font-medium text-gray-700">If you need Carry Over click here</span>
-                  <div className={`icon-chevron-${showCarryOver ? 'up' : 'down'} text-lg text-gray-600`}></div>
-                </button>
-                
-                {showCarryOver && (
-                  <div className="mt-2 space-y-2">
-                    {carryOverPackages.map(pkg => (
-                      <label 
-                        key={pkg.id} 
-                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
-                          formData.lessonPackages.includes(pkg.id) 
-                            ? 'bg-[var(--primary-color)] text-white shadow-md' 
-                            : 'bg-white hover:bg-gray-50'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={formData.lessonPackages.includes(pkg.id)}
-                          onChange={() => handlePackageToggle(pkg.id)}
-                          className="w-5 h-5"
-                        />
-                        <div className="flex-1 flex items-center justify-between">
-                          <span className="font-semibold">{pkg.name}</span>
-                          <span className="text-sm font-medium">TZS {pkg.price.toLocaleString()}</span>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
             
             <div className="pt-3 mt-3 border-t border-gray-300">
               <div className="flex justify-between items-center">

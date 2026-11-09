@@ -219,7 +219,7 @@ function ChatApp() {
     if (!user) return null;
 
     return (
-      <div className="flex flex-col overflow-hidden relative" style={{ backgroundColor: '#F3E8FF', height: '100vh', height: '100dvh' }}>
+      <div className="flex flex-col overflow-hidden relative" style={{ backgroundColor: '#E8EEFF', height: '100vh', height: '100dvh' }}>
         {connectionError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 fixed top-0 left-0 right-0 z-50 flex items-center gap-2">
             <div className="icon-circle-alert text-lg"></div>
@@ -438,7 +438,7 @@ function ChatApp() {
               )}
               <div 
                 className={`transition-all duration-500 ${highlightedMessageId === msg.id ? 'rounded-lg p-2 -mx-2' : ''}`}
-                style={highlightedMessageId === msg.id ? { backgroundColor: 'rgba(139, 92, 246, 0.4)' } : {}}
+                style={highlightedMessageId === msg.id ? { backgroundColor: 'rgba(29, 63, 208, 0.4)' } : {}}
               >
                 <ChatMessage 
                   message={msg} 

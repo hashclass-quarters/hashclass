@@ -125,7 +125,7 @@ function UserDetailsModal({ user, packages, onClose, onEdit, onRefresh }) {
                   <div className="bg-gray-50 rounded-lg p-4">
                     {user.lessonPackages.map((pkg, idx) => (
                       <div key={idx} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                        <span className="font-medium">{pkg.name}</span>
+                        <span className="font-medium">{packageLabel(pkg)}</span>
                         <span className="text-[var(--primary-color)]">TZS {pkg.price.toLocaleString()}</span>
                       </div>
                     ))}

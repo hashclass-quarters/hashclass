@@ -19,14 +19,6 @@ function RegisteredView({ users, onEdit, onRefresh }) {
       email: '', phone: '', password: '', lessonPackageId: ''
     });
 
-    React.useEffect(() => {
-      loadPackages();
-    }, []);
-
-    const loadPackages = async () => {
-      const pkgs = await getAllPackages();
-      setPackages(pkgs);
-    };
 
     // Passwords are stored encrypted and can never be read back; an admin can set a new one.
     const handleResetPassword = async (user) => {
@@ -77,7 +69,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
       canvas.height = 200;
       const ctx = canvas.getContext('2d');
       
-      const colors = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+      const colors = ['#1D3FD0', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#1D3FD0'];
       const color = colors[firstLetter.charCodeAt(0) % colors.length];
       
       ctx.fillStyle = color;
@@ -250,20 +242,10 @@ function RegisteredView({ users, onEdit, onRefresh }) {
 
       let selectedPackage = null;
       if (newUser.lessonPackageId) {
-        const pkg = packages.find(p => p.id === parseInt(newUser.lessonPackageId));
+        const pkg = getPackagesForYear(newUser.year).find(p => p.id === newUser.lessonPackageId);
         if (pkg) {
-          if (pkg.orders >= pkg.maxOrders) {
-            setAlert({ message: 'This package is fully booked', type: 'error' });
-            return;
-          }
-          await reservePackage(pkg.id);
-          selectedPackage = {
-            id: pkg.id,
-            objectId: pkg.objectId,
-            name: pkg.name,
-            description: pkg.description,
-            price: pkg.price
-          };
+          selectedPackage = { id: pkg.id, name: pkg.name, price: pkg.price };
+          if (pkg.carryOver) selectedPackage.carryOver = true;
         }
       }
 
@@ -443,13 +425,15 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                       <div className="flex flex-col gap-1">
                         {[1, 2, 3].map(monthNum => {
                           const monthPayment = user.monthlyPayments?.[`month${monthNum}`];
-                          const status = monthPayment?.status || (monthNum === 1 ? (user.paymentStatus || (user.paid ? 'PAID' : 'UNPAID')) : 'UNPAID');
+                          const storedStatus = monthPayment?.status || (monthNum === 1 ? (user.paymentStatus || (user.paid ? 'PAID' : 'UNPAID')) : 'UNPAID');
+                          const status = effectiveMonthStatus(monthNum, storedStatus);
                           return (
                             <button 
                               key={monthNum}
+                              title={getMonthDateRange(monthNum)}
                               onClick={(e) => { 
                                 e.stopPropagation();
-                                if (status === 'PAID') {
+                                if (storedStatus === 'PAID') {
                                   setCancelPaymentData({ user, monthNum });
                                   setShowCancelPaymentPopup(true);
                                 } else {
@@ -463,7 +447,8 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                               className={`px-3 py-1 rounded text-xs font-semibold ${
                                 status === 'PAID' ? 'bg-green-600 text-white' :
                                 status === 'PARTIAL' ? 'bg-yellow-500 text-white' :
-                                'bg-gray-200 text-gray-700'
+                                status === 'UNPAID' ? 'bg-red-100 text-red-700' :
+                                'bg-gray-200 text-gray-600'
                               }`}
                             >
                               M{monthNum}: {status}
@@ -511,21 +496,24 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                 <input value={newUser.regNumber} onChange={e => setNewUser({...newUser, regNumber: e.target.value})} placeholder="Registration Number" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} placeholder="Full Name" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.course} onChange={e => setNewUser({...newUser, course: e.target.value})} placeholder="Course" className="w-full px-3 py-2 border rounded-lg text-sm" />
-                <input value={newUser.year} onChange={e => setNewUser({...newUser, year: e.target.value})} placeholder="Year of Study" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <select value={newUser.year} onChange={e => setNewUser({...newUser, year: e.target.value, lessonPackageId: ''})} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <option value="">Select Year of Study</option>
+                  {STUDY_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
                 <input value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} placeholder="Email" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.phone} onChange={e => setNewUser({...newUser, phone: e.target.value})} placeholder="Phone" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} placeholder="Password" className="w-full px-3 py-2 border rounded-lg text-sm" type="password" />
                 <div>
-                  <label className="block text-sm font-medium mb-1">Lesson Package (Optional)</label>
+                  <label className="block text-sm font-medium mb-1">{packageSectionTitle(newUser.year)}</label>
                   <select 
                     value={newUser.lessonPackageId} 
                     onChange={e => setNewUser({...newUser, lessonPackageId: e.target.value})} 
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   >
-                    <option value="">Select a package</option>
-                    {packages.map(pkg => (
-                      <option key={pkg.id} value={pkg.id} disabled={pkg.orders >= pkg.maxOrders}>
-                        {pkg.name} - TZS {(pkg.price || 0).toLocaleString()}/month ({pkg.orders}/{pkg.maxOrders} booked)
+                    <option value="">{newUser.year ? 'Select a package' : 'Select the year of study first'}</option>
+                    {getPackagesForYear(newUser.year).map(pkg => (
+                      <option key={pkg.id} value={pkg.id}>
+                        {pkg.name} - TZS {pkg.price.toLocaleString()}/month
                       </option>
                     ))}
                   </select>

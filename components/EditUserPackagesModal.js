@@ -1,67 +1,60 @@
 function EditUserPackagesModal({ user, onClose, onSave }) {
   try {
-    const [selectedPackages, setSelectedPackages] = React.useState([]);
+    const [selectedId, setSelectedId] = React.useState('');
+    const [year, setYear] = React.useState(STUDY_YEARS.includes(user.year) ? user.year : 'FIRST YEAR');
     const [loading, setLoading] = React.useState(false);
 
-    const allPackages = [
-      { id: 'AF121', name: 'AF121', price: 10000 },
-      { id: 'ST1208', name: 'ST 1208', price: 5000 },
-      { id: 'IT111', name: 'IT 111', price: 5000 },
-      { id: 'AF227', name: 'AF227', price: 10000 },
-      { id: 'AF223', name: 'AF223', price: 10000 }
-    ];
+    const packages = getPackagesForYear(year);
 
     React.useEffect(() => {
-      const userPackageIds = user.lessonPackages?.map(p => p.id) || 
-                             (user.lessonPackage ? [user.lessonPackage.id] : []);
-      setSelectedPackages(userPackageIds);
+      const current = (user.lessonPackages && user.lessonPackages[0]) || user.lessonPackage;
+      setSelectedId(current ? current.id : '');
     }, [user]);
 
-    const handleToggle = (pkgId) => {
-      setSelectedPackages(prev => 
-        prev.includes(pkgId)
-          ? prev.filter(id => id !== pkgId)
-          : [...prev, pkgId]
-      );
-    };
+    const selected = packages.find(p => p.id === selectedId);
 
     const handleSave = async () => {
+      if (!selected) {
+        alert('Please select a package');
+        return;
+      }
       setLoading(true);
       try {
-        const packagesToSave = allPackages
-          .filter(pkg => selectedPackages.includes(pkg.id))
-          .map(pkg => ({
-            id: pkg.id,
-            name: pkg.name,
-            price: pkg.price
-          }));
-        
-        await onSave(packagesToSave);
+        const saved = { id: selected.id, name: selected.name, price: selected.price };
+        if (selected.carryOver) saved.carryOver = true;
+        await onSave([saved]);
         onClose();
       } catch (error) {
         console.error('Error saving packages:', error);
-        alert('Failed to save lesson packages');
+        alert('Failed to save lesson package');
         setLoading(false);
       }
     };
 
-    const totalAmount = allPackages
-      .filter(pkg => selectedPackages.includes(pkg.id))
-      .reduce((sum, pkg) => sum + pkg.price, 0);
-
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
         <div className="bg-white rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-xl font-bold mb-4">Edit Lesson Packages</h3>
-          <p className="text-sm text-gray-600 mb-4">Select packages for {user.name}</p>
-          
+          <h3 className="text-xl font-bold mb-1">Edit Lesson Package</h3>
+          <p className="text-sm text-gray-600 mb-3">Choose one package for {user.name}</p>
+
+          <label className="block text-sm font-medium mb-1">Year of Study</label>
+          <select
+            value={year}
+            onChange={e => { setYear(e.target.value); setSelectedId(''); }}
+            className="w-full px-3 py-2 border rounded-lg text-sm mb-4"
+          >
+            {STUDY_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+
+          <p className="text-sm font-semibold text-gray-700 mb-2">{packageSectionTitle(year)}</p>
           <div className="space-y-2 mb-4">
-            {allPackages.map(pkg => (
+            {packages.map(pkg => (
               <label key={pkg.id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <input 
-                  type="checkbox"
-                  checked={selectedPackages.includes(pkg.id)}
-                  onChange={() => handleToggle(pkg.id)}
+                  type="radio"
+                  name="editLessonPackage"
+                  checked={selectedId === pkg.id}
+                  onChange={() => setSelectedId(pkg.id)}
                   className="w-5 h-5 accent-[var(--primary-color)]"
                 />
                 <div className="flex-1">
@@ -76,7 +69,7 @@ function EditUserPackagesModal({ user, onClose, onSave }) {
             <div className="flex justify-between items-center">
               <span className="font-semibold">Total/Month:</span>
               <span className="text-lg font-bold text-[var(--primary-color)]">
-                TZS {totalAmount.toLocaleString()}
+                TZS {(selected ? selected.price : 0).toLocaleString()}
               </span>
             </div>
           </div>

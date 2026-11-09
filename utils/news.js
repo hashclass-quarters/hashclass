@@ -23,107 +23,30 @@ async function addNews(newsData) {
   });
 }
 
-async function toggleNewsLike(newsId, userId) {
-  const post = await trickleGetObject('news_post', newsId);
-  if (post) {
-    let likes = post.objectData.likes ? post.objectData.likes.split(',').filter(x => x) : [];
-    const idx = likes.indexOf(userId);
-    if (idx > -1) likes.splice(idx, 1);
-    else likes.push(userId);
-    await trickleUpdateObject('news_post', newsId, {
-      likes: likes.join(','),
-      comments: post.objectData.comments || '[]',
-      views: post.objectData.views || ''
-    });
-  }
+// likes / views / comments are changed on the server in one locked step (app_news_action),
+// so two students acting at the same moment never overwrite each other.
+function newsAction(newsId, action, extra) {
+  return window.HC.rpc('app_news_action', Object.assign({ token: window.HC.getToken(), id: newsId, action: action }, extra || {}));
+}
+
+async function toggleNewsLike(newsId) {
+  await newsAction(newsId, 'like');
 }
 
 async function addNewsComment(newsId, userId, userName, userProfilePic, text) {
-  const post = await trickleGetObject('news_post', newsId);
-  if (post) {
-    let comments = post.objectData.comments ? JSON.parse(post.objectData.comments) : [];
-    const commentId = Date.now();
-    comments.push({ 
-      id: commentId,
-      userId, 
-      userName,
-      userProfilePic: userProfilePic || '',
-      text, 
-      timestamp: Date.now(),
-      replies: [],
-      notifiedUsers: []
-    });
-    await trickleUpdateObject('news_post', newsId, {
-      likes: post.objectData.likes || '',
-      comments: JSON.stringify(comments),
-      views: post.objectData.views || ''
-    });
-  }
+  await newsAction(newsId, 'comment', { text: text });
 }
 
 async function addCommentReply(newsId, commentId, userId, userName, userProfilePic, text) {
-  const post = await trickleGetObject('news_post', newsId);
-  if (post) {
-    let comments = post.objectData.comments ? JSON.parse(post.objectData.comments) : [];
-    const comment = comments.find(c => c.id === commentId);
-    if (comment) {
-      comment.replies = comment.replies || [];
-      comment.replies.push({
-        userId,
-        userName,
-        userProfilePic: userProfilePic || '',
-        text,
-        timestamp: Date.now()
-      });
-      
-      comment.notifiedUsers = comment.notifiedUsers || [];
-      if (!comment.notifiedUsers.includes(comment.userId)) {
-        comment.notifiedUsers.push(comment.userId);
-      }
-      comment.replies.forEach(reply => {
-        if (!comment.notifiedUsers.includes(reply.userId) && reply.userId !== userId) {
-          comment.notifiedUsers.push(reply.userId);
-        }
-      });
-      
-      await trickleUpdateObject('news_post', newsId, {
-        likes: post.objectData.likes || '',
-        comments: JSON.stringify(comments),
-        views: post.objectData.views || ''
-      });
-    }
-  }
+  await newsAction(newsId, 'reply', { commentId: commentId, text: text });
 }
 
-async function clearCommentNotification(newsId, commentId, userId) {
-  const post = await trickleGetObject('news_post', newsId);
-  if (post) {
-    let comments = post.objectData.comments ? JSON.parse(post.objectData.comments) : [];
-    const comment = comments.find(c => c.id === commentId);
-    if (comment && comment.notifiedUsers) {
-      comment.notifiedUsers = comment.notifiedUsers.filter(id => id !== userId);
-      await trickleUpdateObject('news_post', newsId, {
-        likes: post.objectData.likes || '',
-        comments: JSON.stringify(comments),
-        views: post.objectData.views || ''
-      });
-    }
-  }
+async function clearCommentNotification(newsId, commentId) {
+  await newsAction(newsId, 'clear_notification', { commentId: commentId });
 }
 
-async function addNewsView(newsId, userId) {
-  const post = await trickleGetObject('news_post', newsId);
-  if (post) {
-    let views = post.objectData.views ? post.objectData.views.split(',').filter(x => x) : [];
-    if (!views.includes(userId)) {
-      views.push(userId);
-      await trickleUpdateObject('news_post', newsId, {
-        likes: post.objectData.likes || '',
-        comments: post.objectData.comments || '[]',
-        views: views.join(',')
-      });
-    }
-  }
+async function addNewsView(newsId) {
+  await newsAction(newsId, 'view');
 }
 
 async function deleteNews(newsId) {
@@ -131,14 +54,5 @@ async function deleteNews(newsId) {
 }
 
 async function deleteNewsComment(newsId, commentId) {
-  const post = await trickleGetObject('news_post', newsId);
-  if (post && post.objectData.comments) {
-    let comments = JSON.parse(post.objectData.comments);
-    comments = comments.filter(c => c.id !== commentId);
-    await trickleUpdateObject('news_post', newsId, {
-      likes: post.objectData.likes || '',
-      comments: JSON.stringify(comments),
-      views: post.objectData.views || ''
-    });
-  }
+  await newsAction(newsId, 'delete_comment', { commentId: commentId });
 }

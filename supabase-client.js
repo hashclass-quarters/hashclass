@@ -265,3 +265,60 @@
   window.appChangePassword = appChangePassword;
   window.appApproveReset = appApproveReset;
 })();
+
+
+// ---------------------------------------------------------------------------
+// Busy buttons: when a click starts a request, the button is disabled and shows a spinner
+// until the request(s) finish, so nothing can be double-clicked.
+// ---------------------------------------------------------------------------
+(function () {
+  if (window.__hcBusyInstalled) return;
+  window.__hcBusyInstalled = true;
+  var seq = 0, pending = {};
+  var origFetch = window.fetch ? window.fetch.bind(window) : null;
+  if (origFetch) {
+    window.fetch = function () {
+      var id = ++seq; pending[id] = 1;
+      var p = origFetch.apply(null, arguments);
+      var done = function () { delete pending[id]; };
+      p.then(done, done);
+      return p;
+    };
+  }
+  function anyActiveSince(start) {
+    for (var id in pending) if (+id > start) return true;
+    return false;
+  }
+  function makeBusy(btn, start) {
+    if (btn.classList.contains('hc-busy')) return;
+    var weDisabled = !btn.disabled;
+    btn.classList.add('hc-busy');
+    btn.setAttribute('aria-busy', 'true');
+    if (weDisabled) btn.disabled = true;
+    var t0 = Date.now(), lastSeq = seq, quietSince = 0;
+    var iv = setInterval(function () {
+      var now = Date.now();
+      if (anyActiveSince(start) || seq !== lastSeq) { lastSeq = seq; quietSince = 0; if (now - t0 < 60000) return; }
+      else {
+        if (!quietSince) { quietSince = now; return; }
+        if (now - quietSince < 150 || now - t0 < 350) return;
+      }
+      clearInterval(iv);
+      btn.classList.remove('hc-busy');
+      btn.removeAttribute('aria-busy');
+      if (weDisabled) btn.disabled = false;
+    }, 60);
+  }
+  document.addEventListener('click', function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!btn) return;
+    if (btn.classList.contains('hc-busy')) { e.stopPropagation(); e.preventDefault(); return; }
+    if (btn.disabled || btn.hasAttribute('data-no-busy')) return;
+    var start = seq, tries = 0;
+    (function check() {
+      if (!btn.isConnected) return;
+      if (seq > start) { makeBusy(btn, start); return; }
+      if (++tries < 5) setTimeout(check, tries === 1 ? 0 : 80);
+    })();
+  }, true);
+})();

@@ -78,7 +78,7 @@ function ChatInput({ onSend, replyingTo, onCancelReply, onTyping }) {
           </div>
         )}
         {replyingTo && (
-          <div className="flex items-center gap-2 px-3 py-2 border-l-4 border-[var(--primary-color)]" style={{ backgroundColor: 'rgba(139, 92, 246, 0.15)' }}>
+          <div className="flex items-center gap-2 px-3 py-2 border-l-4 border-[var(--primary-color)]" style={{ backgroundColor: 'rgba(29, 63, 208, 0.15)' }}>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-[var(--primary-color)] truncate">{replyingTo.userName}</p>
               {replyingTo.type === 'image' ? (

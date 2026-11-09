@@ -83,7 +83,7 @@ function EnhancedStatsCards({ validUsers, registeredUsers }) {
           labels: Object.keys(courses),
           datasets: [{
             data: Object.values(courses),
-            backgroundColor: ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B', '#F97316', '#06B6D4']
+            backgroundColor: ['#1D3FD0', '#EC4899', '#3B82F6', '#10B981', '#F59E0B', '#F97316', '#06B6D4']
           }]
         },
         options: { 
@@ -103,7 +103,7 @@ function EnhancedStatsCards({ validUsers, registeredUsers }) {
           labels: Object.keys(years),
           datasets: [{
             data: Object.values(years),
-            backgroundColor: ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981']
+            backgroundColor: ['#1D3FD0', '#EC4899', '#3B82F6', '#10B981']
           }]
         },
         options: { responsive: true, maintainAspectRatio: false }
@@ -143,7 +143,7 @@ function EnhancedStatsCards({ validUsers, registeredUsers }) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-6">
-        <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-lg p-5 text-white">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between mb-3">
             <div className="icon-trending-up text-3xl"></div>
             <span className="text-sm opacity-80">Rate</span>

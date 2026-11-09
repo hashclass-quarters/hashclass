@@ -6,12 +6,13 @@ function PasswordField({ value, onChange, error, label }) {
       <div className="space-y-1" data-name="password-field" data-file="components/PasswordField.js">
         <label className="block text-sm font-medium text-[var(--text-dark)]">{label}</label>
         <div className="relative">
+          <div className="icon-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#1D3FD0] pointer-events-none"></div>
           <input
             type={showPassword ? 'text' : 'password'}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter your password"
-            className={`w-full px-4 py-3 pr-12 rounded-lg bg-white bg-opacity-90 border ${
+            className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white bg-opacity-90 border ${
               error ? 'border-red-500' : 'border-gray-300'
             } focus:border-[var(--primary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-opacity-50`}
           />

@@ -110,8 +110,7 @@ function FinancialStatement({ user, onClose }) {
               {user.lessonPackages && user.lessonPackages.length > 0 ? (
                 user.lessonPackages.map((pkg, idx) => (
                   <div key={idx} className="bg-gray-50 p-3 rounded-lg mb-2">
-                    <p className="font-semibold">{pkg.name}</p>
-                    <p className="text-sm text-gray-600">{pkg.description}</p>
+                    <p className="font-semibold">{packageLabel(pkg)}</p>
                     <p className="text-sm font-bold text-[var(--primary-color)]">TZS {pkg.price.toLocaleString()}/month</p>
                   </div>
                 ))

@@ -40,6 +40,8 @@ function SignupPhoneField({ value, onChange, error }) {
       return (
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">Phone Number</label>
+          <div className="relative">
+          <div className="icon-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#1D3FD0] pointer-events-none"></div>
           <input
             type="text"
             value={value}
@@ -47,8 +49,9 @@ function SignupPhoneField({ value, onChange, error }) {
             onFocus={handleFocus}
             placeholder="+255 XXX XXX XXX"
             maxLength={16}
-            className={`w-full px-4 py-3 rounded-lg border-2 ${error ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm`}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border-2 ${error ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm`}
           />
+          </div>
         </div>
       );
   } catch (error) {

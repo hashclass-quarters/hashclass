@@ -3,33 +3,9 @@ function PaymentDetailsPopup({ user, onClose }) {
   const [showPaymentDetails, setShowPaymentDetails] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
-  const getCurrentMonth = () => {
-    const today = new Date();
-    const month1Start = new Date('2026-04-27');
-    const month1End = new Date('2026-06-10');
-    const month2Start = new Date('2026-06-11');
-    const month2End = new Date('2026-07-10');
-    const month3Start = new Date('2026-07-11');
-    const month3End = new Date('2026-07-24');
-    
-    if (today >= month1Start && today <= month1End) return 1;
-    if (today >= month2Start && today <= month2End) return 2;
-    if (today >= month3Start && today <= month3End) return 3;
-    if (today > month3End) return 4;
-    return 0;
-  };
-
-  const getMonthDateRange = (monthNum) => {
-    const ranges = {
-      1: '27th April - 10th June 2026',
-      2: '11th June - 10th July 2026',
-      3: '11th July - 24th July 2026'
-    };
-    return ranges[monthNum] || '';
-  };
 
   const handleCopyNumber = () => {
-    navigator.clipboard.writeText('108199930');
+    navigator.clipboard.writeText('140576405');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -42,6 +18,16 @@ function PaymentDetailsPopup({ user, onClose }) {
       return user.lessonPackage.price;
     }
     return 0;
+  };
+
+  // current month if it is not fully paid, otherwise the next unpaid month
+  const getMonthToPay = () => {
+    const cur = getCurrentMonth();
+    const first = cur >= 1 && cur <= 3 ? cur : 1;
+    for (let m = first; m <= 3; m++) {
+      if (getMonthPayment(m).status !== 'PAID') return m;
+    }
+    return null;
   };
 
   const getMonthPayment = (monthNum) => {
@@ -78,6 +64,8 @@ function PaymentDetailsPopup({ user, onClose }) {
 
   const currentMonth = getCurrentMonth();
 
+  const monthToPay = getMonthToPay();
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-xl p-6 max-w-sm mx-4 w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -89,9 +77,10 @@ function PaymentDetailsPopup({ user, onClose }) {
           <div className="space-y-3">
             {[1, 2, 3].map(monthNum => {
               const payment = getMonthPayment(monthNum);
+              const shownStatus = effectiveMonthStatus(monthNum, payment.status);
               const isExpanded = expandedMonth === monthNum;
-              const isPastMonth = monthNum < currentMonth;
-              const isFutureMonth = monthNum > currentMonth;
+              const isPastMonth = getMonthState(monthNum) === 'past' && monthNum !== currentMonth;
+              const isFutureMonth = getMonthState(monthNum) === 'upcoming';
               return (
                 <div key={monthNum} className="border rounded-lg overflow-hidden">
                   <button
@@ -106,12 +95,8 @@ function PaymentDetailsPopup({ user, onClose }) {
                       {isPastMonth && <span className="text-xs text-gray-500">(Past)</span>}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        payment.status === 'PAID' ? 'bg-green-100 text-green-800' :
-                        payment.status === 'PARTIAL' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {payment.status}
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${monthStatusBadgeClass(shownStatus)}`}>
+                        {shownStatus}
                       </span>
                       <div className={`icon-chevron-${isExpanded ? 'up' : 'down'} text-lg`}></div>
                     </div>
@@ -136,11 +121,11 @@ function PaymentDetailsPopup({ user, onClose }) {
                       <div className="flex justify-between pt-2 border-t">
                         <span className="text-sm text-gray-600">Status:</span>
                         <span className={`font-semibold ${
-                          payment.status === 'PAID' ? 'text-green-600' :
-                          payment.status === 'PARTIAL' ? 'text-yellow-600' :
+                          shownStatus === 'PAID' ? 'text-green-600' :
+                          shownStatus === 'PARTIAL' ? 'text-yellow-600' : shownStatus === 'UPCOMING' || shownStatus === 'NOT SET' ? 'text-gray-500' :
                           'text-red-600'
                         }`}>
-                          {payment.status}
+                          {shownStatus}
                         </span>
                       </div>
 
@@ -154,6 +139,13 @@ function PaymentDetailsPopup({ user, onClose }) {
           <p className="text-center text-gray-500 py-4">No lesson package selected yet</p>
         )}
         <div className="space-y-3 mt-6">
+          <button 
+            onClick={() => setShowPaymentDetails(true)} 
+            disabled={!monthToPay}
+            className="w-full bg-[var(--primary-color)] text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {monthToPay ? `PAY FOR MONTH ${monthToPay}` : 'ALL MONTHS PAID'}
+          </button>
           <button 
             onClick={() => {
               // Creating a temporary container to render the statement and download it
@@ -187,44 +179,41 @@ function PaymentDetailsPopup({ user, onClose }) {
             <div className="icon-download text-lg"></div>
             DOWNLOAD STATEMENT
           </button>
-          <button 
-            onClick={() => setShowPaymentDetails(true)} 
-            className="w-full bg-[var(--primary-color)] text-white py-3 rounded-lg font-semibold hover:bg-opacity-90"
-          >
-            PAY
-          </button>
         </div>
         {showPaymentDetails && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowPaymentDetails(false)}>
             <div className="bg-white rounded-xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold text-center mb-4">Lipa Namba ya TanQR</h3>
+              <h3 className="text-lg font-bold text-center mb-4" style={{ color: '#E40000' }}>Airtel Lipa Namba</h3>
               <div className="flex justify-center mb-4">
-                <img src="https://app.trickle.so/storage/public/images/usr_1877ca6910000001/91a05dbc-39e4-4cd6-8fbb-ec60cf3f1a5c.png" alt="CRDB" className="h-20" />
+                <img src="assets/airtel.png" alt="Airtel" className="h-20" onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                <span style={{ display: 'none', color: '#E40000' }} className="text-4xl font-extrabold tracking-tight">airtel</span>
               </div>
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <p className="text-xs text-gray-500 mb-1">PAYMENT NUMBER</p>
-                    <p className="text-lg font-bold">108199930</p>
+                    <p className="text-lg font-bold">140576405</p>
                   </div>
                   <button 
                     onClick={handleCopyNumber} 
-                    className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${copied ? 'bg-green-500 text-white' : 'bg-[var(--primary-color)] text-white'}`}
+                    className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${copied ? 'bg-green-500 text-white' : 'text-white'}`}
+                    style={copied ? undefined : { backgroundColor: '#E40000' }}
                   >
                     {copied ? 'Copied' : 'Copy'}
                   </button>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">NAME</p>
-                  <p className="text-sm font-semibold">HASHIMU SHABANI HALIFA</p>
+                  <p className="text-sm font-semibold">SADATI HAMISI KHALIFA</p>
                 </div>
               </div>
               <p className="text-sm text-center text-gray-700 mb-6">
-                Lipia kupitia namba hiyo ya TanQR na umjulishe kiongozi kuhusu malipo yako.
+                Lipia kupitia namba hiyo ya Airtel na umjulishe kiongozi kuhusu malipo yako.
               </p>
               <button 
                 onClick={() => { setShowPaymentDetails(false); onClose(); }} 
-                className="w-full bg-[var(--primary-color)] text-white py-3 rounded-lg font-semibold hover:bg-opacity-90"
+                className="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90"
+                style={{ backgroundColor: '#E40000' }}
               >
                 OKAY
               </button>

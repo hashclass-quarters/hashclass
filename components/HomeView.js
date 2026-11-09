@@ -9,21 +9,6 @@ function HomeView({ validUsers, registeredUsers }) {
     const chartRef = React.useRef(null);
     const chartInstance = React.useRef(null);
 
-    const getCurrentMonth = () => {
-      const today = new Date();
-      const month1Start = new Date('2026-04-27');
-      const month1End = new Date('2026-06-10');
-      const month2Start = new Date('2026-06-11');
-      const month2End = new Date('2026-07-10');
-      const month3Start = new Date('2026-07-11');
-      const month3End = new Date('2026-07-24');
-      
-      if (today >= month1Start && today <= month1End) return 1;
-      if (today >= month2Start && today <= month2End) return 2;
-      if (today >= month3Start && today <= month3End) return 3;
-      if (today > month3End) return 4;
-      return 0;
-    };
 
     const getPaymentRate = () => {
       if (registeredUsers.length === 0) return 0;
@@ -150,7 +135,7 @@ function HomeView({ validUsers, registeredUsers }) {
             datasets: [{
               label: 'User Count',
               data: [validUsers.length, registeredUsers.length],
-              backgroundColor: ['#8B5CF6', '#A78BFA']
+              backgroundColor: ['#1D3FD0', '#3B63F0']
             }]
           },
           options: {

@@ -22,12 +22,12 @@ function AuthShell({ title, subtitle, step, onBack, roomy, children }) {
                 {subtitle && <p className="text-base text-gray-600 mt-3">{subtitle}</p>}
                 {step && (
                   <div className="mt-4">
-                    <p className="text-sm text-[#1D3FD0] font-medium mb-3">Step {step} of 3</p>
+                    <p className="text-sm text-[#1D3FD0] font-medium mb-3">Step {step} of 4</p>
                     <div className="flex items-center gap-2">
-                      {[1, 2, 3].map((n, i) => (
+                      {[1, 2, 3, 4].map((n, i) => (
                         <React.Fragment key={n}>
                           <div className={`hc-step ${n <= step ? 'on' : ''}`}>{n}</div>
-                          {i < 2 && <div className="hc-dots"><i></i><i></i><i></i></div>}
+                          {i < 3 && <div className="hc-dots"><i></i><i></i><i></i></div>}
                         </React.Fragment>
                       ))}
                     </div>
@@ -69,12 +69,12 @@ function AuthShell({ title, subtitle, step, onBack, roomy, children }) {
           {subtitle && <p className="text-sm text-gray-600 mt-1">{subtitle}</p>}
           {step && (
             <div className="mt-3">
-              <p className="text-sm text-[#1D3FD0] font-medium mb-3">Step {step} of 3</p>
+              <p className="text-sm text-[#1D3FD0] font-medium mb-3">Step {step} of 4</p>
               <div className="flex items-center justify-center gap-2">
-                {[1, 2, 3].map((n, i) => (
+                {[1, 2, 3, 4].map((n, i) => (
                   <React.Fragment key={n}>
                     <div className={`hc-step ${n <= step ? 'on' : ''}`}>{n}</div>
-                    {i < 2 && <div className="hc-dots"><i></i><i></i><i></i></div>}
+                    {i < 3 && <div className="hc-dots"><i></i><i></i><i></i></div>}
                   </React.Fragment>
                 ))}
               </div>

@@ -1,4 +1,4 @@
-function SignupStep3({ formData, setFormData, onBack, onRegister, loading }) {
+function SignupStep3({ formData, setFormData, onBack, onNext, loading }) {
   try {
     const [errors, setErrors] = React.useState({});
     const packages = getPackagesForYear(formData.yearOfStudy);
@@ -12,32 +12,13 @@ function SignupStep3({ formData, setFormData, onBack, onRegister, loading }) {
       if (errors.lessonPackages) setErrors({ ...errors, lessonPackages: '' });
     };
 
-    const handleRegister = () => {
-      const newErrors = {};
-      
+    const handleNext = () => {
       if (formData.lessonPackages.length === 0) {
-        newErrors.lessonPackages = 'Please select one package';
-      }
-      
-      if (!formData.password) {
-        newErrors.password = 'Password is required';
-      } else if (formData.password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
-      }
-      
-      if (!formData.confirmPassword) {
-        newErrors.confirmPassword = 'Please confirm your password';
-      } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
-      
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
+        setErrors({ lessonPackages: 'Please select one package' });
         return;
       }
-      
       setErrors({});
-      onRegister();
+      onNext();
     };
 
     return (
@@ -83,30 +64,6 @@ function SignupStep3({ formData, setFormData, onBack, onRegister, loading }) {
           {errors.lessonPackages && <p className="text-red-500 text-xs mt-1">{errors.lessonPackages}</p>}
         </div>
 
-        <div>
-          <PasswordField
-            value={formData.password}
-            onChange={(val) => {
-              setFormData({ ...formData, password: val });
-              if (errors.password) setErrors({ ...errors, password: '' });
-            }}
-            label="Password"
-          />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-        </div>
-
-        <div>
-          <PasswordField
-            value={formData.confirmPassword}
-            onChange={(val) => {
-              setFormData({ ...formData, confirmPassword: val });
-              if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' });
-            }}
-            label="Confirm Password"
-          />
-          {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-        </div>
-
         <div className="flex gap-2 pt-2">
           <button
             onClick={onBack}
@@ -116,11 +73,11 @@ function SignupStep3({ formData, setFormData, onBack, onRegister, loading }) {
             BACK
           </button>
           <button
-            onClick={handleRegister}
+            onClick={handleNext}
             disabled={loading}
             className="flex-1 bg-[var(--primary-color)] text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
-            {loading ? 'REGISTERING...' : 'REGISTER'}
+            NEXT
           </button>
         </div>
       </div>

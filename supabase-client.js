@@ -322,3 +322,32 @@
     })();
   }, true);
 })();
+
+
+// ---------------------------------------------------------------------------
+// Click + cursor motion (desktop only parts are gated by the pointer media query)
+// ---------------------------------------------------------------------------
+(function () {
+  if (window.__hcFxInstalled) return;
+  window.__hcFxInstalled = true;
+  document.addEventListener('pointerdown', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('button,a.hc-gold-btn') : null;
+    if (!el || el.disabled) return;
+    el.classList.remove('hc-pulse'); void el.offsetWidth; el.classList.add('hc-pulse');
+    setTimeout(function () { el.classList.remove('hc-pulse'); }, 520);
+  }, true);
+  if (!window.matchMedia || !window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  var root = document.documentElement, raf = 0, last = null;
+  document.addEventListener('pointermove', function (e) { last = e; if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+  function tick() {
+    raf = 0; if (!last) return;
+    root.style.setProperty('--mx', (last.clientX / window.innerWidth).toFixed(3));
+    root.style.setProperty('--my', (last.clientY / window.innerHeight).toFixed(3));
+    var t = last.target && last.target.closest ? last.target.closest('.hc-card,.hc-tile,.hc-card-desktop') : null;
+    if (t) {
+      var r = t.getBoundingClientRect();
+      t.style.setProperty('--px', (last.clientX - r.left) + 'px');
+      t.style.setProperty('--py', (last.clientY - r.top) + 'px');
+    }
+  }
+})();

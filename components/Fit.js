@@ -105,7 +105,7 @@ function DesktopBrandPanel({ headline, sub, children }) {
   const logo = 'https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png';
   return (
     <div className="hc-grad relative h-full overflow-hidden">
-      <img src="assets/students.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: '50% 30%' }} />
+      <img src="assets/students.jpg" alt="" className="hc-parallax absolute inset-0 w-full h-full object-cover" style={{ objectPosition: '50% 30%' }} />
       <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg,rgba(10,26,122,.92) 0%,rgba(18,46,176,.80) 55%,rgba(10,26,122,.95) 100%)' }}></div>
       <div className="hc-orb" style={{ width: 420, height: 420, right: -140, top: -120 }}></div>
       <div className="hc-orb" style={{ width: 300, height: 300, left: -100, bottom: -90 }}></div>

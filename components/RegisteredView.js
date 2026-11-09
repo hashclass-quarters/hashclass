@@ -88,7 +88,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
       
       try {
         if (!cancelPaymentData.user.objectId) {
-          alert('Invalid user data. Please refresh the page.');
+          setAlert({ message: 'Invalid user data. Please refresh the page.', type: 'error' });
           return;
         }
         
@@ -133,13 +133,13 @@ function RegisteredView({ users, onEdit, onRefresh }) {
         }
       } catch (error) {
         console.error('Cancel payment error:', error);
-        alert('Failed to cancel payment. Please try again.');
+        setAlert({ message: 'Failed to cancel payment. Please try again.', type: 'error' });
       }
     };
 
     const handlePayment = async () => {
       if (!paymentUser || !amountPaid) {
-        alert('Please enter amount paid');
+        setAlert({ message: 'Please enter amount paid', type: 'error' });
         return;
       }
       
@@ -147,12 +147,16 @@ function RegisteredView({ users, onEdit, onRefresh }) {
       const totalPrice = paymentUser.totalMonthlyPrice || 0;
       
       if (amount <= 0 || isNaN(amount)) {
-        alert('Please enter a valid amount');
+        setAlert({ message: 'Please enter a valid amount', type: 'error' });
         return;
       }
       
-      if (amount > totalPrice) {
-        alert('Amount paid cannot exceed the total price');
+      const key0 = `month${paymentUser.selectedMonth || 1}`;
+      const alreadyPaid0 = (paymentUser.monthlyPayments && paymentUser.monthlyPayments[key0])
+        ? (paymentUser.monthlyPayments[key0].amountPaid || 0)
+        : ((paymentUser.selectedMonth || 1) === 1 ? (paymentUser.amountPaid || 0) : 0);
+      if (amount > Math.max(totalPrice - alreadyPaid0, 0)) {
+        setAlert({ message: 'Amount cannot be more than the remaining balance (TZS ' + Math.max(totalPrice - alreadyPaid0, 0).toLocaleString() + ')', type: 'error' });
         return;
       }
       
@@ -160,7 +164,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
       
       try {
         if (!paymentUser.objectId) {
-          alert('Invalid user data. Please refresh the page.');
+          setAlert({ message: 'Invalid user data. Please refresh the page.', type: 'error' });
           setRecordingPayment(false);
           return;
         }
@@ -171,7 +175,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
         ]);
         
         if (!userObj) {
-          alert('User not found in database');
+          setAlert({ message: 'User not found in database', type: 'error' });
           setRecordingPayment(false);
           return;
         }
@@ -187,7 +191,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
         
         const currentMonthPayment = monthlyPayments[`month${monthNum}`] || {
           price: totalPrice,
-          amountPaid: 0,
+          amountPaid: monthNum === 1 ? (userObj.objectData.amountPaid || 0) : 0,
           balance: totalPrice,
           status: 'UNPAID'
         };
@@ -396,28 +400,16 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                               </span>
                             </div>
                           </div>
-                          <p className="text-xs text-gray-600 mt-1">Paid: TZS {(user.amountPaid || 0).toLocaleString()}</p>
-                          <p className={`text-xs font-semibold mt-1 ${
-                            user.paymentStatus === 'PAID' || user.paid ? 'text-green-600' :
-                            user.paymentStatus === 'PARTIAL' ? 'text-yellow-600' :
-                            'text-red-600'
-                          }`}>
-                            {user.paymentStatus || (user.paid ? 'PAID' : 'UNPAID')}
-                          </p>
+                          <p className="text-xs text-gray-600 mt-1">Paid: TZS {totalPaidOf(user).toLocaleString()}</p>
+                          <p className={`text-xs font-semibold mt-1 ${currentMonthSummary(user).color}`}>M{currentMonthSummary(user).n}: {currentMonthSummary(user).status}</p>
                         </div>
                       ) : user.lessonPackage ? (
                         <div>
                           <p className="font-semibold">{user.lessonPackage.name}</p>
                           <p className="text-xs text-gray-500">{user.lessonPackage.description}</p>
                           <p className="text-xs text-[var(--primary-color)]">TZS {(user.lessonPackage.price || 0).toLocaleString()}/month</p>
-                          <p className="text-xs text-gray-600 mt-1">Paid: TZS {(user.amountPaid || 0).toLocaleString()}</p>
-                          <p className={`text-xs font-semibold mt-1 ${
-                            user.paymentStatus === 'PAID' || user.paid ? 'text-green-600' :
-                            user.paymentStatus === 'PARTIAL' ? 'text-yellow-600' :
-                            'text-red-600'
-                          }`}>
-                            {user.paymentStatus || (user.paid ? 'PAID' : 'UNPAID')}
-                          </p>
+                          <p className="text-xs text-gray-600 mt-1">Paid: TZS {totalPaidOf(user).toLocaleString()}</p>
+                          <p className={`text-xs font-semibold mt-1 ${currentMonthSummary(user).color}`}>M{currentMonthSummary(user).n}: {currentMonthSummary(user).status}</p>
                         </div>
                       ) : 'N/A'}
                     </td>

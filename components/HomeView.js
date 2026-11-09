@@ -24,26 +24,6 @@ function HomeView({ validUsers, registeredUsers }) {
       return ((fullyPaid / registeredUsers.length) * 100).toFixed(1);
     };
 
-    const getUncollectedFunds = () => {
-      let total = 0;
-      registeredUsers.forEach(user => {
-        const totalPrice = user.lessonPackages && user.lessonPackages.length > 0 
-          ? user.lessonPackages.reduce((sum, p) => sum + p.price, 0)
-          : (user.lessonPackage ? user.lessonPackage.price : 0);
-        
-        if (!user.monthlyPayments) {
-          total += (totalPrice * 3) - (user.amountPaid || 0);
-        } else {
-          const payments = typeof user.monthlyPayments === 'string' ? JSON.parse(user.monthlyPayments) : user.monthlyPayments;
-          for (let i = 1; i <= 3; i++) {
-            const payment = payments[`month${i}`];
-            total += payment ? payment.balance : totalPrice;
-          }
-        }
-      });
-      return total;
-    };
-
     const getTotalCollection = () => {
       let total = 0;
       registeredUsers.forEach(user => {

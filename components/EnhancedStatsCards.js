@@ -50,25 +50,7 @@ function EnhancedStatsCards({ validUsers, registeredUsers }) {
     return ((fullyPaid / registeredUsers.length) * 100).toFixed(1);
   };
 
-  const getUncollectedFunds = () => {
-    let total = 0;
-    registeredUsers.forEach(user => {
-      const totalPrice = user.lessonPackages && user.lessonPackages.length > 0 
-        ? user.lessonPackages.reduce((sum, p) => sum + p.price, 0)
-        : (user.lessonPackage ? user.lessonPackage.price : 0);
-      
-      if (!user.monthlyPayments) {
-        total += (totalPrice * 3) - (user.amountPaid || 0);
-      } else {
-        const payments = typeof user.monthlyPayments === 'string' ? JSON.parse(user.monthlyPayments) : user.monthlyPayments;
-        for (let i = 1; i <= 3; i++) {
-          const payment = payments[`month${i}`];
-          total += payment ? payment.balance : totalPrice;
-        }
-      }
-    });
-    return total;
-  };
+  const uncollected = getUncollectedForCurrentMonth(registeredUsers);
 
   React.useEffect(() => {
     const courses = getCourseDistribution();
@@ -156,8 +138,8 @@ function EnhancedStatsCards({ validUsers, registeredUsers }) {
             <div className="icon-circle-alert text-3xl"></div>
             <span className="text-sm opacity-80">Unpaid</span>
           </div>
-          <h3 className="text-2xl font-bold">TZS {getUncollectedFunds().toLocaleString()}</h3>
-          <p className="text-sm opacity-90 mt-1">Uncollected Funds</p>
+          <h3 className="text-2xl font-bold">TZS {uncollected.total.toLocaleString()}</h3>
+          <p className="text-sm opacity-90 mt-1">Uncollected Funds {uncollected.month ? `- Month ${uncollected.month}` : "- no month started"}</p>
         </div>
         <div className="bg-white rounded-xl shadow-md p-4">
           <h3 className="text-sm font-bold mb-2 text-[var(--text-dark)]">Courses</h3>

@@ -33,6 +33,7 @@ function App() {
   try {
     const [regNumber, setRegNumber] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const [redirecting, setRedirecting] = React.useState(false);
     const [errors, setErrors] = React.useState({});
     const [errorMessage, setErrorMessage] = React.useState('');
     const [loading, setLoading] = React.useState(false);
@@ -69,6 +70,7 @@ function App() {
       setLoading(true);
       setErrorMessage('');
       setErrors({});
+      let leaving = false;
       
       try {
         const result = await appLogin(regNumber, password);
@@ -89,6 +91,7 @@ function App() {
           };
           localStorage.setItem('currentUser', JSON.stringify(adminUser));
           localStorage.setItem('user_online_' + adminUser.regNumber, Date.now());
+          leaving = true; setRedirecting(true);
           window.location.href = 'admin.html';
           return;
         }
@@ -97,18 +100,26 @@ function App() {
         const user = shapeRegisteredUser({ objectId: result.objectId, objectData: result.user });
         localStorage.setItem('currentUser', JSON.stringify({ ...user, isAdmin: false }));
         localStorage.setItem('user_online_' + user.regNumber, Date.now());
+        leaving = true; setRedirecting(true);
         window.location.href = 'user-dashboard.html';
       } catch (error) {
         console.error('Error signing in:', error);
         setErrors({ regNumber: true, password: true });
         setErrorMessage(error.message || 'An error occurred. Please try again.');
       } finally {
-        setLoading(false);
+        // after a successful sign in the spinner stays until the next page opens
+        if (!leaving) setLoading(false);
       }
     };
 
     return (
       <>
+        {redirecting && (
+          <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4" style={{ background: '#fff' }} role="status" aria-live="polite">
+            <div style={{ width: 56, height: 56, border: '5px solid #D5DEFA', borderTopColor: '#1D3FD0', borderRadius: '9999px', animation: 'hcspin .8s linear infinite' }}></div>
+            <p className="text-[#1D3FD0] font-semibold">Signing you in...</p>
+          </div>
+        )}
         <AuthShell title="Sign In" subtitle="Welcome back, Genius!" roomy>
           <ErrorMessage message={errorMessage} />
 

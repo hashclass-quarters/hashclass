@@ -103,3 +103,50 @@ function monthStatusBadgeClass(status) {
     : status === 'COMPLETED' ? 'bg-blue-100 text-blue-800'
     : 'bg-red-100 text-red-800';
 }
+
+
+// Money still owed for the CURRENT month only (based on the dates saved in the admin Months tab).
+// Before month 1 starts nothing is due yet; after month 3 ends, month 3 is the last month shown.
+function getUncollectedForCurrentMonth(users) {
+  let n = getCurrentMonth();
+  if (n === 0) return { month: 0, total: 0 };
+  if (n === 4) n = 3;
+  let total = 0;
+  (users || []).forEach(user => {
+    const price = user.lessonPackages && user.lessonPackages.length > 0
+      ? user.lessonPackages.reduce((sum, p) => sum + (p.price || 0), 0)
+      : (user.lessonPackage ? (user.lessonPackage.price || 0) : 0);
+    if (!user.monthlyPayments) {
+      total += Math.max(price - (user.amountPaid || 0), 0);
+    } else {
+      const payments = typeof user.monthlyPayments === 'string' ? JSON.parse(user.monthlyPayments) : user.monthlyPayments;
+      const pay = payments['month' + n];
+      total += pay ? Math.max(pay.balance || 0, 0) : price;
+    }
+  });
+  return { month: n, total };
+}
+
+
+// total money a student has paid over all months
+function totalPaidOf(user) {
+  if (!user.monthlyPayments) return user.amountPaid || 0;
+  const payments = typeof user.monthlyPayments === 'string' ? JSON.parse(user.monthlyPayments) : user.monthlyPayments;
+  return Object.values(payments).reduce((sum, p) => sum + ((p && p.amountPaid) || 0), 0);
+}
+
+
+// status of the month that is running now (or month 1 before dates are set / month 3 after it ended)
+function currentMonthSummary(user) {
+  let n = getCurrentMonth();
+  if (n === 0) n = 1; else if (n === 4) n = 3;
+  let pay = null;
+  if (user.monthlyPayments) {
+    const m = typeof user.monthlyPayments === 'string' ? JSON.parse(user.monthlyPayments) : user.monthlyPayments;
+    pay = m['month' + n] || null;
+  }
+  const stored = pay ? pay.status : (n === 1 ? (user.paymentStatus || (user.paid ? 'PAID' : 'UNPAID')) : 'UNPAID');
+  const status = effectiveMonthStatus(n, stored);
+  const color = status === 'PAID' ? 'text-green-600' : status === 'PARTIAL' ? 'text-yellow-600' : status === 'UNPAID' ? 'text-red-600' : 'text-gray-500';
+  return { n, status, color };
+}

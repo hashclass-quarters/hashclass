@@ -12,7 +12,7 @@ function UserDetailsModal({ user, packages, onClose, onEdit, onRefresh }) {
       document.body.removeChild(link);
     };
 
-    const handleSavePackages = async (newPackages) => {
+    const handleSavePackages = async (newPackages, newYear) => {
       setIsSaving(true);
       try {
         if (!user.objectId) {
@@ -41,19 +41,27 @@ function UserDetailsModal({ user, packages, onClose, onEdit, onRefresh }) {
         for (let i = 1; i <= 3; i++) {
           const monthKey = `month${i}`;
           const currentMonthData = monthlyPayments[monthKey] || {};
+          // month 1 of an older record may only live in the legacy amountPaid field
+          const paidSoFar = currentMonthData.amountPaid !== undefined ? currentMonthData.amountPaid
+            : (i === 1 ? (userObj.objectData.amountPaid || 0) : 0);
           monthlyPayments[monthKey] = {
             price: totalPrice,
-            amountPaid: currentMonthData.amountPaid || 0,
-            balance: totalPrice - (currentMonthData.amountPaid || 0),
-            status: currentMonthData.status || 'UNPAID'
+            amountPaid: paidSoFar,
+            balance: Math.max(totalPrice - paidSoFar, 0),
+            status: paidSoFar >= totalPrice && totalPrice > 0 ? 'PAID' : (paidSoFar > 0 ? 'PARTIAL' : 'UNPAID')
           };
         }
+        const m1 = monthlyPayments.month1;
 
         await trickleUpdateObject('registered_user', userObj.objectId, {
           ...userObj.objectData,
           lessonPackages: JSON.stringify(newPackages),
           lessonPackage: newPackages.length > 0 ? JSON.stringify(newPackages[0]) : null,
-          monthlyPayments: JSON.stringify(monthlyPayments)
+          monthlyPayments: JSON.stringify(monthlyPayments),
+          amountPaid: m1.amountPaid,
+          paid: m1.status === 'PAID',
+          paymentStatus: m1.status,
+          ...(newYear ? { year: newYear } : {})
         });
         
         setShowEditPackages(false);

@@ -22,7 +22,7 @@ function EditUserPackagesModal({ user, onClose, onSave }) {
       try {
         const saved = { id: selected.id, name: selected.name, price: selected.price };
         if (selected.carryOver) saved.carryOver = true;
-        await onSave([saved]);
+        await onSave([saved], year);
         onClose();
       } catch (error) {
         console.error('Error saving packages:', error);

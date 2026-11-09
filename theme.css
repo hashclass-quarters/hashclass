@@ -38,9 +38,16 @@ input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #fff inset;-webkit-text-f
 .hc-check{flex:none;width:2.1rem;height:2.1rem;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FFD24A,#F5B400);color:#0A1A7A;font-weight:800;box-shadow:0 6px 16px rgba(0,0,0,.25)}
 .hc-card-desktop{padding:clamp(24px,4dvh,44px);border-radius:1.75rem;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.28);box-shadow:0 24px 60px rgba(5,15,80,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 
-/* Admin on phones: tighter tables so more columns fit */
-@media (max-width:767px){
-  .hc-admin-main table th,.hc-admin-main table td{padding:8px 6px!important;font-size:12px}
-  .hc-admin-main table img{max-width:36px;max-height:36px}
-  .hc-admin-main h2{font-size:1.25rem!important}
-}
+/* Admin: smaller text and components everywhere, single-line table rows */
+html.hc-admin-page{font-size:13px}
+@media (max-width:767px){html.hc-admin-page{font-size:12.5px}}
+.hc-admin-main table{font-size:.75rem;border-collapse:collapse}
+.hc-admin-main table th,.hc-admin-main table td{padding:.4rem .6rem!important;font-size:.75rem!important;line-height:1.25!important;white-space:nowrap;vertical-align:middle}
+.hc-admin-main table th{font-weight:700}
+.hc-admin-main table img{width:26px!important;height:26px!important;max-width:26px;max-height:26px;object-fit:cover}
+.hc-admin-main table button,.hc-admin-main table a.btn{padding:.2rem .55rem!important;font-size:.68rem!important;line-height:1.2!important;border-radius:.4rem!important}
+.hc-admin-main table [class*="w-10"],.hc-admin-main table [class*="w-12"]{width:1.6rem!important;height:1.6rem!important}
+.hc-admin-main .overflow-x-auto,.hc-admin-main [class*="overflow-hidden"]{max-width:100%}
+.hc-admin-main h2{font-size:1.15rem!important}
+.hc-admin-main button{font-size:.8rem}
+.hc-admin-page header h1{font-size:1.1rem!important}

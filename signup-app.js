@@ -81,9 +81,19 @@ function SignupApp() {
       setStep(3);
     };
 
+    const handleStep3Next = () => {
+      if (formData.lessonPackages.length === 0) {
+        setErrorMessage('Please select at least one lesson package');
+        return;
+      }
+      setErrorMessage('');
+      setStep(4);
+    };
+
     const handleRegister = async () => {
       if (formData.lessonPackages.length === 0) {
         setErrorMessage('Please select at least one lesson package');
+        setStep(3);
         return;
       }
       if (!formData.password || !formData.confirmPassword) {
@@ -175,6 +185,16 @@ function SignupApp() {
               formData={formData}
               setFormData={setFormData}
               onBack={() => setStep(2)}
+              onNext={handleStep3Next}
+              loading={loading}
+            />
+          )}
+
+          {step === 4 && (
+            <SignupStep4
+              formData={formData}
+              setFormData={setFormData}
+              onBack={() => setStep(3)}
               onRegister={handleRegister}
               loading={loading}
             />

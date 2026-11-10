@@ -19,15 +19,18 @@ class ErrorBoundary extends React.Component {
 
 function ChatApp() {
   try {
-    const [user, setUser] = React.useState(null);
+    const [user, setUser] = React.useState(() => { try { return JSON.parse(localStorage.getItem('currentUser') || 'null'); } catch (e) { return null; } });
+    const userRef = React.useRef(user);
+    const seenRef = React.useRef(null);          // ids of messages already shown (null until the first load)
+    const readTriedRef = React.useRef({});
+    const ignoreScrollUntil = React.useRef(0);
     const [messages, setMessages] = React.useState([]);
     const [replyingTo, setReplyingTo] = React.useState(null);
     const [typingUsers, setTypingUsers] = React.useState([]);
     const [autoScroll, setAutoScroll] = React.useState(true);
     const [showScrollButton, setShowScrollButton] = React.useState(false);
     const [highlightedMessageId, setHighlightedMessageId] = React.useState(null);
-    const [firstUnreadId, setFirstUnreadId] = React.useState(null);
-    const [showUnreadLabel, setShowUnreadLabel] = React.useState(false);
+    const [unreadDivider, setUnreadDivider] = React.useState(null);   // { id, count }
     const [connectionError, setConnectionError] = React.useState(false);
     const messagesEndRef = React.useRef(null);
     const messagesContainerRef = React.useRef(null);
@@ -39,6 +42,7 @@ function ChatApp() {
         return;
       }
       setUser(currentUser);
+      userRef.current = currentUser;
       
       let msgInterval;
       let stopRealtime = null;
@@ -81,46 +85,46 @@ function ChatApp() {
     }, [messages, autoScroll]);
 
     const loadMessages = async (isInitial = false) => {
+      const me = userRef.current;
       const allMessages = await getAllChatMessages();
       
       setMessages(prev => {
         const optimisticMessages = prev.filter(m => m.isOptimistic);
         return [...optimisticMessages, ...allMessages];
       });
-      
-      if (user && isInitial) {
-        const firstUnread = allMessages.find(msg => {
-          const readBy = msg.readBy || '';
-          return !readBy.split(',').includes(user.regNumber) && msg.userId !== user.regNumber;
-        });
-        
-        if (firstUnread) {
-          setFirstUnreadId(firstUnread.id);
-          setShowUnreadLabel(true);
-          setTimeout(() => setShowUnreadLabel(false), 5000);
-          
+      if (!me) return;
+
+      const isUnread = (msg) => msg.userId !== me.regNumber && !hasReadMessage(msg.readBy, me.regNumber);
+      const unreadMessages = allMessages.filter(isUnread);
+
+      if (seenRef.current === null) {
+        // first load: show a divider before the first unread message, then jump to it
+        seenRef.current = new Set(allMessages.map(m => m.id));
+        if (unreadMessages.length > 0) {
+          setUnreadDivider({ id: unreadMessages[0].id, count: unreadMessages.length });
+          setAutoScroll(false);
+          ignoreScrollUntil.current = Date.now() + 1500;
           setTimeout(() => {
-            const msgElement = document.querySelector(`[data-message-id="${firstUnread.id}"]`);
-            if (msgElement) {
-              msgElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            const el = document.querySelector(`[data-message-id="${unreadMessages[0].id}"]`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }, 300);
         } else {
           setTimeout(scrollToBottom, 100);
         }
+      } else {
+        // later loads: a new message from somebody else makes a sound (like WhatsApp)
+        const fresh = allMessages.filter(m => !seenRef.current.has(m.id) && m.userId !== me.regNumber);
+        allMessages.forEach(m => seenRef.current.add(m.id));
+        if (fresh.length > 0 && window.HCSound) window.HCSound.incoming();
       }
-      
-      if (user && allMessages.length > 0) {
-        const unreadMessages = allMessages.filter(msg => {
-          const readBy = msg.readBy || '';
-          return msg.userId !== user.regNumber && !readBy.split(',').includes(user.regNumber);
+
+      // read receipts (only while the chat is on screen)
+      if (document.visibilityState !== 'hidden') {
+        unreadMessages.forEach(msg => {
+          if (readTriedRef.current[msg.id]) return;
+          readTriedRef.current[msg.id] = true;
+          markMessageAsRead(msg.id, me.regNumber, { name: me.name, pic: me.profilePic || '' });
         });
-        
-        if (unreadMessages.length > 0) {
-          unreadMessages.forEach(msg => {
-            markMessageAsRead(msg.id, user.regNumber);
-          });
-        }
       }
       
       setConnectionError(false);
@@ -133,7 +137,10 @@ function ChatApp() {
       }
     };
 
+    const hideDivider = () => setUnreadDivider(d => (d ? null : d));
+
     const handleScroll = (e) => {
+      if (Date.now() > ignoreScrollUntil.current) hideDivider();
       const { scrollTop, scrollHeight, clientHeight } = e.target;
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
       setAutoScroll(isAtBottom);
@@ -161,19 +168,23 @@ function ChatApp() {
         replyTo: currentReply,
         timestamp: Date.now(),
         readBy: user.regNumber,
+        readers: [],
+        isAdmin: !!user.isAdmin,
         isOptimistic: true
       };
       
       setMessages(prev => [...prev, tempMessage]);
+      if (window.HCSound) window.HCSound.send();
       setReplyingTo(null);
       setAutoScroll(true);
       setTimeout(scrollToBottom, 50);
       
       try {
         const result = await sendChatMessage(user.regNumber, user.name, user.profilePic, content, type, currentReply, fileName);
+        if (seenRef.current) seenRef.current.add(result.objectId);
         
         setMessages(prev => prev.map(m => 
-          m.id === tempId ? { ...m, id: result.objectId, isOptimistic: false } : m
+          m.id === tempId ? { ...m, id: result.objectId, isOptimistic: false, isAdmin: !!user.isAdmin } : m
         ));
         
         setTimeout(() => loadMessages(false), 500);
@@ -233,14 +244,14 @@ function ChatApp() {
           </div>
         )}
         <div className="bg-[var(--primary-color)] text-white p-4 flex items-center gap-3 shadow-md fixed top-0 left-0 right-0 z-50" style={{ marginTop: connectionError ? '52px' : '0' }}>
-          <button onClick={() => window.location.href = 'user-dashboard.html'}>
+          <button onClick={() => window.location.href = user.isAdmin ? 'admin.html' : 'user-dashboard.html'}>
             <div className="icon-arrow-left text-xl"></div>
           </button>
-          <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-10 h-10 rounded-full" />
+          <img src="assets/logo.png" alt="Logo" className="w-10 h-10 rounded-full object-contain bg-white/10" />
           <div className="flex-1">
             <h1 className="font-bold">HashCLASS Chat</h1>
             {typingUsers.length > 0 ? (
-              <p className="text-xs opacity-90">Someone is typing...</p>
+              <p className="text-xs opacity-90 hc-typing">Someone is Typing<span className="hc-dots"><i></i><i></i><i></i></span></p>
             ) : (
               <p className="text-xs opacity-90">The Golden Minds</p>
             )}
@@ -419,6 +430,8 @@ function ChatApp() {
         <div 
           ref={messagesContainerRef}
           onScroll={handleScroll}
+          onWheel={hideDivider}
+          onTouchMove={hideDivider}
           className="flex-1 overflow-y-auto p-3 space-y-1.5 relative z-0 chat-messages" 
           style={{ 
             marginTop: '72px', 
@@ -429,11 +442,13 @@ function ChatApp() {
         >
           {messages.map((msg, index) => (
             <React.Fragment key={msg.id}>
-              {showUnreadLabel && msg.id === firstUnreadId && (
-                <div className="flex justify-center my-2">
-                  <div className="bg-[var(--primary-color)] text-white px-4 py-1 rounded-full text-xs font-semibold shadow-md animate-fadeIn">
-                    Unread messages
-                  </div>
+              {unreadDivider && msg.id === unreadDivider.id && (
+                <div className="flex items-center gap-3 my-2 animate-fadeIn" data-unread-divider>
+                  <div className="flex-1 h-px bg-[var(--primary-color)] opacity-40"></div>
+                  <span className="text-[11px] font-semibold text-[var(--primary-color)] whitespace-nowrap">
+                    {unreadDivider.count} Unread {unreadDivider.count === 1 ? 'Message' : 'Messages'}
+                  </span>
+                  <div className="flex-1 h-px bg-[var(--primary-color)] opacity-40"></div>
                 </div>
               )}
               <div 
@@ -450,6 +465,13 @@ function ChatApp() {
               </div>
             </React.Fragment>
           ))}
+          {typingUsers.length > 0 && (
+            <div className="flex justify-start" data-typing-bubble>
+              <div className="bg-white text-gray-600 rounded-2xl px-3 py-2 shadow-sm text-xs font-medium hc-typing">
+                Someone is Typing<span className="hc-dots"><i></i><i></i><i></i></span>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
         {showScrollButton && (

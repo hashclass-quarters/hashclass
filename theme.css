@@ -51,3 +51,12 @@ html.hc-admin-page{font-size:13px}
 .hc-admin-main h2{font-size:1.15rem!important}
 .hc-admin-main button{font-size:.8rem}
 .hc-admin-page header h1{font-size:1.1rem!important}
+
+/* chat: animated "Someone is Typing..." */
+.hc-dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}
+.hc-dots i{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;animation:hcdot 1.2s infinite ease-in-out both}
+.hc-dots i:nth-child(2){animation-delay:.18s}
+.hc-dots i:nth-child(3){animation-delay:.36s}
+@keyframes hcdot{0%,70%,100%{transform:translateY(0);opacity:.35}35%{transform:translateY(-4px);opacity:1}}
+.hc-typing{animation:hcfade .3s ease-out}
+@keyframes hcfade{from{opacity:0}to{opacity:1}}

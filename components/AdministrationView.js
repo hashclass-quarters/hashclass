@@ -166,10 +166,7 @@ function AdministrationView({ onEdit, onRefresh }) {
                     <td className="px-6 py-4 text-sm">{admin.email}</td>
                     <td className="px-6 py-4 text-sm">{admin.phone}</td>
                     <td className="px-6 py-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span>••••••••</span>
-                        <button onClick={(e) => { e.stopPropagation(); handleResetPassword(admin); }} className="text-xs text-[var(--primary-color)] underline">Reset</button>
-                      </div>
+                      <PasswordCell kind="admin" regNumber={admin.regNumber} canView={(JSON.parse(localStorage.getItem('currentUser') || '{}').authority) === 'FOUNDER & CEO'} onReset={() => handleResetPassword(admin)} />
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-[var(--primary-color)]">{admin.authority}</td>
                     <td className="px-6 py-4">

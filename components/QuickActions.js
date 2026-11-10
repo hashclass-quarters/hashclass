@@ -11,22 +11,17 @@ function QuickActions({ onBlockedClick }) {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
       setUser(currentUser);
       
+      let lastCount = null;
       const checkUnread = async () => {
         if (!currentUser.regNumber) return;
-        
-        const chatOpened = localStorage.getItem('chat_opened_' + currentUser.regNumber);
-        if (chatOpened) {
-          setUnreadCount(0);
-          return;
-        }
-        
         try {
           const result = await trickleListObjects('chat_message', 100, false);
-          const messages = result.items.filter(item => !item.objectData.deleted);
-          const unread = messages.filter(msg => {
-            const readBy = msg.objectData.readBy || '';
-            return msg.objectData.userId !== currentUser.regNumber && !readBy.split(',').includes(currentUser.regNumber);
-          });
+          const messages = (result.items || []).filter(item => !item.objectData.deleted);
+          const unread = messages.filter(msg =>
+            msg.objectData.userId !== currentUser.regNumber && !hasReadMessage(msg.objectData.readBy, currentUser.regNumber));
+          // a sound when new unread messages arrive (not on the first check)
+          if (lastCount !== null && unread.length > lastCount && window.HCSound) window.HCSound.notify();
+          lastCount = unread.length;
           setUnreadCount(unread.length);
         } catch (error) {
           console.error('Error checking unread messages:', error);
@@ -34,9 +29,16 @@ function QuickActions({ onBlockedClick }) {
       };
       
       checkUnread();
-      const interval = setInterval(checkUnread, 20000);
-      const stopRealtime = window.chatRealtime ? window.chatRealtime.onMessage(checkUnread) : null;
-      return () => { clearInterval(interval); if (stopRealtime) stopRealtime(); };
+      const interval = setInterval(checkUnread, 15000);
+      const stopRealtime = window.chatRealtime ? window.chatRealtime.onMessage(() => setTimeout(checkUnread, 400)) : null;
+      const onShow = () => { if (document.visibilityState !== 'hidden') checkUnread(); };
+      document.addEventListener('visibilitychange', onShow);
+      window.addEventListener('pageshow', onShow);
+      return () => {
+        clearInterval(interval); if (stopRealtime) stopRealtime();
+        document.removeEventListener('visibilitychange', onShow);
+        window.removeEventListener('pageshow', onShow);
+      };
     }, []);
     const handleCopyNumber = () => {
       navigator.clipboard.writeText('108199930');
@@ -53,9 +55,6 @@ function QuickActions({ onBlockedClick }) {
       } else if (action.label === 'ATTENDANCE') {
         setShowAttendance(true);
       } else if (action.label === 'CHAT') {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        localStorage.setItem('chat_opened_' + currentUser.regNumber, Date.now());
-        setUnreadCount(0);
         window.location.href = 'chat.html';
       } else {
         onBlockedClick();

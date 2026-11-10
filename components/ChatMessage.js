@@ -5,10 +5,70 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
     const [swipeOffset, setSwipeOffset] = React.useState(0);
     const [longPressTimer, setLongPressTimer] = React.useState(null);
     const [showDeleteMenu, setShowDeleteMenu] = React.useState(false);
+    const [showViewers, setShowViewers] = React.useState(false);
     
     const isOwnMessage = message.userId === currentUser.regNumber;
-    const names = message.userName.split(' ');
-    const displayName = names.length >= 2 ? `${names[0]} ${names[names.length - 1]}` : message.userName;
+    const isAdminMsg = !!message.isAdmin || message.userName === 'CHIEF EXECUTIVE OFFICER';
+    const names = (message.userName || '').split(' ');
+    const displayName = isAdminMsg ? 'HashCLASS CEO' : (names.length >= 2 ? `${names[0]} ${names[names.length - 1]}` : message.userName);
+    const senderPic = isAdminMsg ? 'assets/logo.png' : message.userPic;
+
+    // people who have read this message (everyone except the sender), earliest first
+    const viewers = (Array.isArray(message.readers) ? message.readers : [])
+      .filter(r => r && r.id && r.id !== message.userId)
+      .sort((a, b) => (a.at || 0) - (b.at || 0));
+    const shortName = (n) => { const p = String(n || '').trim().split(/\s+/); return p.length >= 2 ? `${p[0]} ${p[p.length - 1]}` : (p[0] || 'Student'); };
+    const readTime = (t) => {
+      if (!t) return '';
+      const d = new Date(t), now = new Date();
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      return d.toDateString() === now.toDateString() ? time : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + time;
+    };
+
+    // the press-and-hold popup (shared by every kind of message)
+    const renderMenu = () => (
+      <>
+        {showDeleteMenu && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowDeleteMenu(false)}>
+            <div className="bg-white rounded-xl p-4 w-64 mx-4" onClick={e => e.stopPropagation()}>
+              <button onClick={() => { setShowDeleteMenu(false); setShowViewers(true); }} className="w-full py-3 text-left border-b flex items-center gap-2">
+                <div className="icon-eye text-base text-[var(--primary-color)]"></div> Viewers
+              </button>
+              <button onClick={() => { onDelete(message.id, false); setShowDeleteMenu(false); }} className="w-full py-3 text-left border-b">Delete for me</button>
+              {isOwnMessage && (
+                <button onClick={() => { onDelete(message.id, true); setShowDeleteMenu(false); }} className="w-full py-3 text-left text-red-600">Delete for everyone</button>
+              )}
+              <button onClick={() => setShowDeleteMenu(false)} className="w-full py-3 text-left text-gray-500">Cancel</button>
+            </div>
+          </div>
+        )}
+        {showViewers && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowViewers(false)}>
+            <div className="bg-white rounded-xl p-4 w-80 max-w-[92vw] mx-4" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold">Viewers{viewers.length > 0 ? ` (${viewers.length})` : ''}</h3>
+                <button onClick={() => setShowViewers(false)} aria-label="Close" className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+                </button>
+              </div>
+              {viewers.length === 0 ? (
+                <p className="text-sm text-gray-500 py-4 text-center">No one has viewed this message yet</p>
+              ) : (
+                <div className="max-h-72 overflow-y-auto space-y-2">
+                  {viewers.map(v => (
+                    <div key={v.id} className="flex items-center gap-2 whitespace-nowrap">
+                      <img src={v.pic || 'https://via.placeholder.com/40'} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100" />
+                      <span className="flex-1 min-w-0 truncate text-sm font-semibold">{shortName(v.name)}</span>
+                      <span className="text-xs text-gray-500 flex-shrink-0">{readTime(v.at)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+    );
 
     const handleTouchStart = (e) => {
       const touch = e.targetTouches[0].clientX;
@@ -87,55 +147,42 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              <img src={message.userPic || currentUser.profilePic} alt="" className="w-8 h-8 rounded-full object-cover" />
+              <img src={senderPic || currentUser.profilePic} alt="" className="w-8 h-8 rounded-full object-cover" />
               <div className="text-6xl">{message.content}</div>
             </div>
           </div>
-          {showDeleteMenu && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowDeleteMenu(false)}>
-              <div className="bg-white rounded-xl p-4 w-64 mx-4" onClick={e => e.stopPropagation()}>
-                <button onClick={() => { onDelete(message.id, false); setShowDeleteMenu(false); }} className="w-full py-3 text-left border-b">Delete for me</button>
-                {isOwnMessage && (
-                  <button onClick={() => { onDelete(message.id, true); setShowDeleteMenu(false); }} className="w-full py-3 text-left text-red-600">Delete for everyone</button>
-                )}
-                <button onClick={() => setShowDeleteMenu(false)} className="w-full py-3 text-left text-gray-500">Cancel</button>
-              </div>
-            </div>
-          )}
+          {renderMenu()}
         </>
       );
     }
 
-    const isCEO = message.userName === 'CHIEF EXECUTIVE OFFICER';
-    const ceoStyle = isCEO ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 border-2 border-yellow-500 shadow-lg' : '';
+    const isCEO = isAdminMsg;
+    const ceoStyle = 'bg-gradient-to-r from-yellow-300 to-yellow-500 text-gray-900 border-2 border-yellow-500 shadow-lg';
 
     return (
       <>
         <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${message.isOptimistic ? 'opacity-60' : ''}`} data-message-id={message.id}>
           <div 
-            className={`max-w-[75%] ${isOwnMessage ? (isCEO ? ceoStyle : 'bg-[var(--primary-color)] text-white') : 'bg-white text-gray-800'} rounded-lg p-2 shadow-sm transition-transform duration-200`}
+            className={`max-w-[75%] ${isCEO ? ceoStyle : (isOwnMessage ? 'bg-[var(--primary-color)] text-white' : 'bg-white text-gray-800')} rounded-lg p-2 shadow-sm transition-transform duration-200`}
             style={{ transform: `translateX(${swipeOffset}px)` }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {!isOwnMessage && (
+            {isCEO ? (
+              <div className="flex items-center gap-2 mb-1">
+                <img src="assets/logo.png" alt="HashCLASS" className="w-8 h-8 rounded-full flex-shrink-0 object-contain bg-white border border-yellow-600" />
+                <p className="text-xs font-extrabold text-yellow-900">HashCLASS CEO</p>
+              </div>
+            ) : !isOwnMessage ? (
               <div className="flex items-center gap-2 mb-1">
                 <img src={message.userPic || 'https://via.placeholder.com/40'} alt={displayName} className="w-8 h-8 rounded-full flex-shrink-0 object-cover" />
                 <p className="text-xs font-bold text-[var(--primary-color)]">{displayName}</p>
               </div>
-            )}
-            {isOwnMessage && (
+            ) : (
               <div className="flex items-center gap-2 mb-1">
                 <img src={message.userPic || currentUser.profilePic} alt="You" className="w-8 h-8 rounded-full flex-shrink-0 object-cover" />
-                {isCEO ? (
-                  <>
-                    <div className="icon-crown text-sm text-yellow-900"></div>
-                    <p className="text-xs font-bold text-yellow-900">CEO</p>
-                  </>
-                ) : (
-                  <p className="text-xs font-bold text-white opacity-90">You</p>
-                )}
+                <p className="text-xs font-bold text-white opacity-90">You</p>
               </div>
             )}
       {message.replyTo && (
@@ -175,17 +222,7 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
             </div>
           </div>
         </div>
-        {showDeleteMenu && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowDeleteMenu(false)}>
-            <div className="bg-white rounded-xl p-4 w-64 mx-4" onClick={e => e.stopPropagation()}>
-              <button onClick={() => { onDelete(message.id, false); setShowDeleteMenu(false); }} className="w-full py-3 text-left border-b">Delete for me</button>
-              {isOwnMessage && (
-                <button onClick={() => { onDelete(message.id, true); setShowDeleteMenu(false); }} className="w-full py-3 text-left text-red-600">Delete for everyone</button>
-              )}
-              <button onClick={() => setShowDeleteMenu(false)} className="w-full py-3 text-left text-gray-500">Cancel</button>
-            </div>
-          </div>
-        )}
+        {renderMenu()}
       </>
     );
   } catch (error) {

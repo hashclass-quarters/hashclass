@@ -46,9 +46,11 @@ create table if not exists public.app_credentials (
   kind       text not null check (kind in ('student','admin')),
   reg_key    text not null,
   pw_hash    text not null,
+  pw_plain   text,                       -- readable copy so the CEO can view passwords (see app_view_password)
   updated_at timestamptz not null default now(),
   primary key (kind, reg_key)
 );
+alter table public.app_credentials add column if not exists pw_plain text;
 create table if not exists public.app_sessions (
   token_hash text primary key,
   kind       text not null,
@@ -175,7 +177,7 @@ begin
     when 'chat_message' then
       case when op = 'create' then true
            when ceo then true
-           when op = 'update' and p_keys <@ array['readBy'] then true
+           when op = 'update' and p_keys <@ array['readBy','readers'] then true
            else public.app_norm(p_data->>'userId') = a->>'reg_key' end
     when 'password_request' then ceo
     when 'month_period' then auth in ('FOUNDER & CEO','Chief Financial Officer')
@@ -208,9 +210,9 @@ begin
   if p_pw is null or length(p_pw) < 6 then
     perform public.app_fail('P0001', 'Password must be at least 6 characters');
   end if;
-  insert into public.app_credentials (kind, reg_key, pw_hash)
-  values (p_kind, public.app_norm(p_reg), crypt(p_pw, gen_salt('bf', 10)))
-  on conflict (kind, reg_key) do update set pw_hash = excluded.pw_hash, updated_at = now();
+  insert into public.app_credentials (kind, reg_key, pw_hash, pw_plain)
+  values (p_kind, public.app_norm(p_reg), crypt(p_pw, gen_salt('bf', 10)), p_pw)
+  on conflict (kind, reg_key) do update set pw_hash = excluded.pw_hash, pw_plain = excluded.pw_plain, updated_at = now();
 end $$;
 
 -- ---------------------------------------------------------------------
@@ -452,7 +454,7 @@ begin
     d := jsonb_set(d, '{regNumber}', to_jsonb(public.app_norm(d->>'regNumber')));
   end if;
   if tbl = 'chat_message' then
-    d := d || jsonb_build_object('userId', a->>'reg_key', 'deleted', false);
+    d := d || jsonb_build_object('userId', a->>'reg_key', 'deleted', false, 'isAdmin', (a->>'kind') = 'admin');
     if not (d ? 'timestamp') then d := d || jsonb_build_object('timestamp', (extract(epoch from clock_timestamp()) * 1000)::bigint); end if;
   end if;
 
@@ -658,6 +660,20 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
+-- the FOUNDER & CEO can view a password (only passwords saved after this upgrade are readable)
+create or replace function public.app_view_password(args jsonb) returns jsonb
+language plpgsql security definer set search_path = public, extensions, pg_temp as $$
+declare a jsonb := public.app_need(args->>'token'); p text;
+begin
+  if coalesce(a->>'authority','') <> 'FOUNDER & CEO' then
+    perform public.app_fail('PT403', 'Only the FOUNDER & CEO can view passwords');
+  end if;
+  select c.pw_plain into p from public.app_credentials c
+   where c.kind = case when args->>'kind' = 'admin' then 'admin' else 'student' end
+     and c.reg_key = public.app_norm(args->>'reg');
+  return jsonb_build_object('password', p);
+end $$;
+
 -- ---------------------------------------------------------------------
 -- 7. Permissions: only the app_* entry points are callable from the browser
 -- ---------------------------------------------------------------------
@@ -674,7 +690,7 @@ begin
             where n.nspname = 'public' and p.proname in (
               'app_login','app_logout','app_me','app_check_valid','app_reg_exists','app_register',
               'app_request_password_reset','app_change_password','app_approve_reset',
-              'app_list','app_get','app_create','app_update','app_delete','app_news_action') loop
+              'app_list','app_get','app_create','app_update','app_delete','app_news_action','app_view_password') loop
     execute format('grant execute on function %s to anon, authenticated', f.sig);
   end loop;
 end $$;

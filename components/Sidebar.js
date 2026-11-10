@@ -7,12 +7,13 @@ function Sidebar({ activeView, setActiveView, onLogout, mobile, open, onClose })
       { id: 'months', icon: 'calendar-days', label: 'Months' },
       { id: 'attendance', icon: 'calendar-check', label: 'Attendance' },
       { id: 'news', icon: 'newspaper', label: 'News' },
+      { id: 'chat', icon: 'message-circle', label: 'CHAT', href: 'chat.html' },
       { id: 'password-requests', icon: 'key', label: 'Password Requests' },
       { id: 'announcements', icon: 'megaphone', label: 'Announcements' }
     ];
 
     if (mobile && !open) return null;
-    const pick = (id) => { setActiveView(id); if (mobile && onClose) onClose(); };
+    const pick = (id, href) => { if (href) { window.location.href = href; return; } setActiveView(id); if (mobile && onClose) onClose(); };
     const box = (
       <div className={mobile ? 'w-72 max-w-[85vw] h-full bg-white shadow-2xl flex flex-col' : 'w-56 bg-white shadow-lg flex flex-col'} data-name="sidebar" data-file="components/Sidebar.js" onClick={mobile ? (e) => e.stopPropagation() : undefined}>
         <div className="p-4 hc-grad" style={{ borderBottom: '4px solid #F5B400' }}>
@@ -29,7 +30,7 @@ function Sidebar({ activeView, setActiveView, onLogout, mobile, open, onClose })
           {menuItems.map(item => (
             <button
               key={item.id}
-              onClick={() => pick(item.id)}
+              onClick={() => pick(item.id, item.href)}
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg mb-1.5 transition-colors ${
                 activeView === item.id 
                   ? 'bg-[var(--primary-color)] text-white' 

@@ -374,10 +374,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                     <td className="px-6 py-4 text-sm">{user.email}</td>
                     <td className="px-6 py-4 text-sm">{user.phone}</td>
                     <td className="px-6 py-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span>••••••••</span>
-                        <button onClick={(e) => { e.stopPropagation(); handleResetPassword(user); }} className="text-xs text-[var(--primary-color)] underline">Reset</button>
-                      </div>
+                      <PasswordCell kind="student" regNumber={user.regNumber} canView={(JSON.parse(localStorage.getItem('currentUser') || '{}').authority) === 'FOUNDER & CEO'} onReset={() => handleResetPassword(user)} />
                     </td>
                     <td className="px-6 py-4 text-sm" onClick={(e) => e.stopPropagation()}>
                       {user.lessonPackages && user.lessonPackages.length > 0 ? (

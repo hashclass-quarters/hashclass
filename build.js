@@ -42,6 +42,16 @@ fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
 // static files
 for (const f of ['sitemap.xml', 'theme.css']) if (fs.existsSync(path.join(SRC, f))) fs.copyFileSync(path.join(SRC, f), path.join(OUT, f));
 if (fs.existsSync(path.join(SRC, 'assets'))) fs.cpSync(path.join(SRC, 'assets'), path.join(OUT, 'assets'), { recursive: true });
+// installable app (PWA): manifest, service worker and icons
+if (fs.existsSync(path.join(SRC, 'pwa'))) {
+  fs.cpSync(path.join(SRC, 'pwa'), path.join(OUT, 'pwa'), { recursive: true });
+  fs.copyFileSync(path.join(SRC, 'pwa', 'sw.js'), path.join(OUT, 'sw.js'));                       // root scope
+  fs.copyFileSync(path.join(SRC, 'pwa', 'manifest.webmanifest'), path.join(OUT, 'manifest.webmanifest'));
+}
+const PWA_TAGS = '<link rel="manifest" href="/manifest.webmanifest">\n    <meta name="theme-color" content="#1D3FD0">\n' +
+  '    <meta name="mobile-web-app-capable" content="yes">\n    <meta name="apple-mobile-web-app-capable" content="yes">\n' +
+  '    <meta name="apple-mobile-web-app-title" content="HashCLASS">\n    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png">\n' +
+  '    <script>if("serviceWorker"in navigator&&location.protocol!=="file:")addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})})</script>\n';
 for (const f of ['supabase-client.js', 'realtime.js']) {
   const code = esbuild.transformSync(fs.readFileSync(path.join(SRC, f), 'utf8'), { minify: true, target: 'es2018' }).code;
   fs.writeFileSync(path.join(OUT, f), code);
@@ -85,6 +95,7 @@ for (const page of fs.readdirSync(SRC).filter(f => f.endsWith('.html'))) {
     .replace(/https:\/\/resource\.trickle\.so\/vendor_lib\/unpkg\/react-dom@18\/umd\/react-dom\.production\.min\.js/g, REACT_DOM)
     .replace(/https:\/\/resource\.trickle\.so\/vendor_lib\/unpkg\/lucide-static@0\.516\.0\/font\/lucide\.css/g, LUCIDE);
   html = swapAssets(html);
+  if (!/rel="manifest"/.test(html)) html = html.replace(/<\/head>/i, '    ' + PWA_TAGS + '</head>');
   fs.writeFileSync(path.join(OUT, page), html);
   console.log('built', page, files.length ? '(' + files.length + ' scripts bundled)' : '');
 }

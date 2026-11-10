@@ -74,3 +74,12 @@ Royal blue + gold theme (colours in `theme.css` and the `--primary-color` variab
 
 ## SQL scripts, in order
 01_schema.sql, 02_storage.sql, 03_create_founder.sql (first setup). Later updates: 04_months.sql (payment months), 05_news_actions.sql (safe likes/comments), 06_faster_login.sql (faster sign-in). 01_schema.sql already contains 04, 05 and 06 for new projects.
+
+## Installing as an app / making an APK
+
+The site is a PWA (manifest.webmanifest, sw.js and icons in `pwa/`), so on Android Chrome the menu shows **Install app / Add to Home screen**.
+
+To get a real `.apk`/`.aab` file from the live site (no coding):
+1. Open https://www.pwabuilder.com and enter `https://hashclassudom.vercel.app`.
+2. Click **Package for stores → Android**, keep the defaults, and download the zip.
+3. The zip contains `app-release-signed.apk` (install on phones directly) and an `.aab` (for Google Play), plus `signing.keystore` and its password file: keep these safe, you need them to publish updates.

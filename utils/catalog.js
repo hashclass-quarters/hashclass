@@ -45,3 +45,31 @@ function packageLabel(pkg) {
 function packageSectionTitle(year) {
   return isCarryOverYear(year) ? 'Carry Over Courses' : 'Lesson Package';
 }
+
+
+// Third year students also take their own course, AF318 (optional), next to ONE carry over package.
+const THIRD_YEAR_OWN_PACKAGE = { id: 'AF318', name: 'AF318', price: 15000 };
+
+// the student's own (non carry over) course packages for this year - only third year has one
+function getOwnCoursePackages(year) {
+  return year === 'THIRD YEAR' ? [Object.assign({}, THIRD_YEAR_OWN_PACKAGE)] : [];
+}
+
+// third year can combine AF318 with one carry over package; other years pick exactly one package
+function isMultiPackageYear(year) {
+  return year === 'THIRD YEAR';
+}
+
+// turns a list of chosen package ids into the objects that are saved on the student
+function buildSavedPackages(year, ids) {
+  const all = getOwnCoursePackages(year).concat(getPackagesForYear(year));
+  const out = [];
+  getOwnCoursePackages(year).forEach(o => { if (ids.includes(o.id)) out.push({ id: o.id, name: o.name, price: o.price }); });
+  const carry = getPackagesForYear(year).find(p => ids.includes(p.id));
+  if (carry) {
+    const saved = { id: carry.id, name: carry.name, price: carry.price };
+    if (carry.carryOver) saved.carryOver = true;
+    out.push(saved);
+  }
+  return isMultiPackageYear(year) ? out : out.slice(-1);
+}

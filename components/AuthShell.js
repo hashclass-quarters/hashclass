@@ -47,13 +47,13 @@ function AuthShell({ title, subtitle, step, onBack, roomy, children }) {
       className="h-[100dvh] hc-grad"
       innerClassName="items-center"
       behind={
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-md overflow-hidden pointer-events-none" style={{ height: 'max(20rem, 44%)', WebkitMaskImage: 'linear-gradient(180deg,#000 72%,transparent 100%)', maskImage: 'linear-gradient(180deg,#000 72%,transparent 100%)' }}>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full overflow-hidden pointer-events-none" style={{ maxWidth: 'calc(28rem / var(--hc-zoom, 1))', height: 'max(20rem, 44%)', WebkitMaskImage: 'linear-gradient(180deg,#000 72%,transparent 100%)', maskImage: 'linear-gradient(180deg,#000 72%,transparent 100%)' }}>
         <img src="assets/students.jpg" alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 20%' }} />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg,rgba(10,26,122,.78) 0%,rgba(18,46,176,.72) 55%,rgba(10,26,122,.95) 100%)' }}></div>
       </div>
       }
     >
-      <div className={`w-full max-w-md px-6 text-center relative z-10 ${roomy ? 'flex-1 flex flex-col justify-center pt-8 pb-14' : 'pt-5 pb-12'}`}>
+      <div className={`w-full px-6 text-center relative z-10 ${roomy ? 'flex-1 flex flex-col justify-center pt-8 pb-14' : 'pt-5 pb-12'}`} style={{ maxWidth: 'calc(28rem / var(--hc-zoom, 1))' }}>
         {onBack && (
           <button onClick={onBack} aria-label="Back" className="absolute left-5 top-6 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#1D3FD0]">
             <div className="icon-arrow-left text-xl"></div>
@@ -63,7 +63,7 @@ function AuthShell({ title, subtitle, step, onBack, roomy, children }) {
         <h1 className={`hc-brand font-extrabold text-white tracking-tight ${roomy ? 'text-5xl mt-2' : 'text-4xl mt-1'}`}>Hash<span className="gold">CLASS</span></h1>
         <p className={`hc-tag mt-1 ${roomy ? 'text-base' : 'text-sm'}`}>The Golden Minds</p>
       </div>
-      <div className={`hc-sheet relative z-10 w-full max-w-md ${roomy ? 'flex-none -mt-6' : 'flex-1 -mt-8'} flex flex-col rounded-t-[2.25rem] px-6 pt-6 pb-6 hc-fade`} style={roomy ? { paddingBottom: 'clamp(24px, calc((100dvh - 700px) * 0.42), 150px)' } : undefined}>
+      <div className={`hc-sheet relative z-10 w-full ${roomy ? 'flex-none -mt-6' : 'flex-1 -mt-8'} flex flex-col rounded-t-[2.25rem] px-6 pt-6 pb-6 hc-fade`} style={roomy ? { maxWidth: 'calc(28rem / var(--hc-zoom, 1))', paddingBottom: 'clamp(24px, calc((100dvh - 700px) * 0.42), 150px)' } : { maxWidth: 'calc(28rem / var(--hc-zoom, 1))' }}>
         <div className="text-center mb-3">
           <h2 className="text-3xl font-extrabold text-[#1D3FD0]">{title}</h2>
           {subtitle && <p className="text-sm text-gray-600 mt-1">{subtitle}</p>}

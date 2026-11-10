@@ -64,64 +64,49 @@ function SignupStep1({ formData, setFormData, universities, courses, onNext, loa
 
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">University</label>
-          <div className="relative">
-            <div className="icon-landmark absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#1D3FD0] pointer-events-none"></div>
-          <select
+          <CustomSelect
+            icon="icon-landmark"
             value={formData.university}
-            onChange={(e) => {
-              handleUniversityChange(e);
+            placeholder="Select University"
+            error={!!errors.university}
+            options={universities.map(u => ({ value: u, label: u }))}
+            onChange={(val) => {
+              handleUniversityChange({ target: { value: val } });
               if (errors.university) setErrors({ ...errors, university: '' });
             }}
-            className={`w-full pl-11 pr-4 py-3 rounded-xl border-2 ${errors.university ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm`}
-          >
-            <option value="">Select University</option>
-            {universities.map(uni => (
-              <option key={uni} value={uni}>{uni}</option>
-            ))}
-          </select>
-          </div>
+          />
           {errors.university && <p className="text-red-500 text-xs mt-1">{errors.university}</p>}
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">Year of Study</label>
-          <div className="relative">
-            <div className="icon-calendar absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#1D3FD0] pointer-events-none"></div>
-          <select
+          <CustomSelect
+            icon="icon-calendar"
             value={formData.yearOfStudy}
-            onChange={(e) => {
-              handleYearChange(e);
+            placeholder="Select Year"
+            error={!!errors.yearOfStudy}
+            options={['FIRST YEAR', 'SECOND YEAR', 'THIRD YEAR'].map(y => ({ value: y, label: y }))}
+            onChange={(val) => {
+              handleYearChange({ target: { value: val } });
               if (errors.yearOfStudy) setErrors({ ...errors, yearOfStudy: '' });
             }}
-            className={`w-full pl-11 pr-4 py-3 rounded-xl border-2 ${errors.yearOfStudy ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm`}
-          >
-            <option value="">Select Year</option>
-            <option value="FIRST YEAR">FIRST YEAR</option>
-            <option value="SECOND YEAR">SECOND YEAR</option>
-            <option value="THIRD YEAR">THIRD YEAR</option>
-          </select>
-          </div>
+          />
           {errors.yearOfStudy && <p className="text-red-500 text-xs mt-1">{errors.yearOfStudy}</p>}
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">Course</label>
-          <div className="relative">
-            <div className="icon-book-open absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#1D3FD0] pointer-events-none"></div>
-          <select
+          <CustomSelect
+            icon="icon-book-open"
             value={formData.course}
-            onChange={(e) => {
-              setFormData({ ...formData, course: e.target.value });
+            placeholder="Select Course"
+            error={!!errors.course}
+            options={courses.map(c => ({ value: c, label: c }))}
+            onChange={(val) => {
+              setFormData({ ...formData, course: val });
               if (errors.course) setErrors({ ...errors, course: '' });
             }}
-            className={`w-full pl-11 pr-4 py-3 rounded-xl border-2 ${errors.course ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm`}
-          >
-            <option value="">Select Course</option>
-            {courses.map(course => (
-              <option key={course} value={course}>{course}</option>
-            ))}
-          </select>
-          </div>
+          />
           {errors.course && <p className="text-red-500 text-xs mt-1">{errors.course}</p>}
         </div>
 

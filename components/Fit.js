@@ -10,12 +10,14 @@ function useFit(outerRef, innerRef, opts) {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         inner.style.zoom = 1;
+        inner.style.setProperty('--hc-zoom', 1);
         inner.style.minHeight = '0px';
         const avail = outer.clientHeight;
         const nat = inner.scrollHeight;
         if (!avail || !nat) return;
         const z = Math.max(min, Math.min(1, avail / nat));
         inner.style.zoom = z;
+        inner.style.setProperty('--hc-zoom', z);   // lets max-width caps stay the same on screen
         inner.style.minHeight = (avail / z) + 'px';
       });
     };

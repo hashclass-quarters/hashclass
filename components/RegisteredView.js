@@ -16,7 +16,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
     const [showFinancialStatement, setShowFinancialStatement] = React.useState(null);
     const [newUser, setNewUser] = React.useState({
       regNumber: '', name: '', course: '', year: '',
-      email: '', phone: '', password: '', lessonPackageId: ''
+      email: '', phone: '', password: '', lessonPackageId: '', ownCourse: false
     });
 
 
@@ -244,13 +244,11 @@ function RegisteredView({ users, onEdit, onRefresh }) {
         return;
       }
 
-      let selectedPackage = null;
-      if (newUser.lessonPackageId) {
-        const pkg = getPackagesForYear(newUser.year).find(p => p.id === newUser.lessonPackageId);
-        if (pkg) {
-          selectedPackage = { id: pkg.id, name: pkg.name, price: pkg.price };
-          if (pkg.carryOver) selectedPackage.carryOver = true;
-        }
+      const ids = (newUser.ownCourse ? getOwnCoursePackages(newUser.year).map(o => o.id) : []).concat(newUser.lessonPackageId ? [newUser.lessonPackageId] : []);
+      const selectedPackages = buildSavedPackages(newUser.year, ids);
+      if (selectedPackages.length === 0) {
+        setAlert({ message: 'Please select a lesson package', type: 'error' });
+        return;
       }
 
       const profilePic = generateProfilePic(newUser.name);
@@ -264,7 +262,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
         phone: newUser.phone || '+255000000000',
         profilePic: profilePic,
         password: newUser.password || '',
-        lessonPackage: selectedPackage,
+        lessonPackages: selectedPackages,
         paid: false
       };
       let created;
@@ -279,7 +277,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
       }
       setNewUser({
         regNumber: '', name: '', course: '', year: '',
-        email: '', phone: '', password: '', lessonPackageId: ''
+        email: '', phone: '', password: '', lessonPackageId: '', ownCourse: false
       });
       setShowAddForm(false);
       onRefresh();
@@ -488,7 +486,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                 <input value={newUser.regNumber} onChange={e => setNewUser({...newUser, regNumber: e.target.value})} placeholder="Registration Number" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} placeholder="Full Name" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.course} onChange={e => setNewUser({...newUser, course: e.target.value})} placeholder="Course" className="w-full px-3 py-2 border rounded-lg text-sm" />
-                <select value={newUser.year} onChange={e => setNewUser({...newUser, year: e.target.value, lessonPackageId: ''})} className="w-full px-3 py-2 border rounded-lg text-sm">
+                <select value={newUser.year} onChange={e => setNewUser({...newUser, year: e.target.value, lessonPackageId: '', ownCourse: false})} className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select Year of Study</option>
                   {STUDY_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
@@ -496,6 +494,12 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                 <input value={newUser.phone} onChange={e => setNewUser({...newUser, phone: e.target.value})} placeholder="Phone" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} placeholder="Password" className="w-full px-3 py-2 border rounded-lg text-sm" type="password" />
                 <div>
+                  {isMultiPackageYear(newUser.year) && getOwnCoursePackages(newUser.year).map(o => (
+                    <label key={o.id} className="flex items-center gap-2 mb-2 text-sm cursor-pointer">
+                      <input type="checkbox" checked={!!newUser.ownCourse} onChange={e => setNewUser({...newUser, ownCourse: e.target.checked})} className="w-4 h-4" />
+                      <span className="font-semibold">{o.name}</span> <span className="text-gray-600">- TZS {o.price.toLocaleString()}/month</span>
+                    </label>
+                  ))}
                   <label className="block text-sm font-medium mb-1">{packageSectionTitle(newUser.year)}</label>
                   <select 
                     value={newUser.lessonPackageId} 

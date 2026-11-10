@@ -114,14 +114,7 @@ function SignupApp() {
 
       try {
         // exactly one package, taken from the shared catalog for the chosen year
-        const yearPackages = getPackagesForYear(formData.yearOfStudy);
-        const selectedPackages = formData.lessonPackages.slice(0, 1).map(pkgId => {
-          const pkg = yearPackages.find(p => p.id === pkgId);
-          if (!pkg) return null;
-          const saved = { id: pkg.id, name: pkg.name, price: pkg.price };
-          if (pkg.carryOver) saved.carryOver = true;
-          return saved;
-        }).filter(Boolean);
+        const selectedPackages = buildSavedPackages(formData.yearOfStudy, formData.lessonPackages);
 
         if (selectedPackages.length === 0) {
           throw new Error('No valid packages selected');

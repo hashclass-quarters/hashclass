@@ -112,7 +112,6 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
         <img src={post.image} className="w-full aspect-video object-cover" onClick={() => setShowComments(!showComments)} />
         <div className="p-4">
           <p className="text-sm mb-2">{post.description}</p>
-          <p className="text-xs text-gray-500 mb-3">{formatTimestamp(post.timestamp)}</p>
           <div className="flex items-center gap-6 mb-3">
             <button onClick={handleLike} className="flex items-center gap-2">
               {isLiked ? (
@@ -129,6 +128,7 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
             <a href={post.image} download className="flex items-center gap-2 text-gray-600 hover:text-[var(--primary-color)]">
               <div className="icon-download text-xl"></div>
             </a>
+            <span className="ml-auto text-xs text-gray-500 whitespace-nowrap">{formatTimestamp(post.timestamp)}</span>
           </div>
           {showComments && (
             <div className="border-t pt-3">

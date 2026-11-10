@@ -7,9 +7,66 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
     const [replyingTo, setReplyingTo] = React.useState(null);
     const [expandedReplies, setExpandedReplies] = React.useState({});
 
+    const rootRef = React.useRef(null);
+    const commentsRef = React.useRef(null);
+
     React.useEffect(() => {
       setPost(initialPost);
     }, [initialPost]);
+
+    // the nearest scrolling parent (the news list)
+    const getScroller = () => {
+      let el = rootRef.current ? rootRef.current.parentElement : null;
+      while (el && el !== document.body) {
+        const oy = getComputedStyle(el).overflowY;
+        if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return el;
+        el = el.parentElement;
+      }
+      return null;
+    };
+
+    // when the comments open, move the post up a little so the comment box and a few comments are visible
+    React.useEffect(() => {
+      if (!showComments) return;
+      const t = setTimeout(() => {
+        const box = commentsRef.current, scroller = getScroller(), me = rootRef.current;
+        if (!box || !scroller || !me) return;
+        const c = scroller.getBoundingClientRect();
+        const b = box.getBoundingClientRect();
+        const m = me.getBoundingClientRect();
+        const wanted = b.top + Math.max(170, Math.min(b.height, 240));   // comment box + room for a few comments
+        let need = wanted - (c.bottom - 12);
+        const room = Math.max(0, b.top - c.top - 40);            // keep the comment box itself in view (never scroll it off the top)
+        need = Math.min(need, room);
+        if (need > 2) scroller.scrollBy({ top: need, behavior: 'smooth' });
+      }, 60);
+      return () => clearTimeout(t);
+    }, [showComments]);
+
+    // close the comments when the post has scrolled completely out of view (keeping the scroll position steady)
+    React.useEffect(() => {
+      if (!showComments) return;
+      const scroller = getScroller();
+      if (!scroller) return;
+      const check = () => {
+        const me = rootRef.current;
+        if (!me) return;
+        const c = scroller.getBoundingClientRect();
+        const r = me.getBoundingClientRect();
+        const above = r.bottom <= c.top, below = r.top >= c.bottom;
+        if (!above && !below) return;
+        const topBefore = scroller.scrollTop, hBefore = scroller.scrollHeight;
+        ReactDOM.flushSync(() => setShowComments(false));
+        if (above) {
+          const shrink = hBefore - scroller.scrollHeight;
+          if (shrink > 0) scroller.scrollTop = topBefore - shrink;
+        }
+      };
+      const prevAnchor = scroller.style.overflowAnchor;
+      scroller.style.overflowAnchor = 'none';
+      scroller.addEventListener('scroll', check, { passive: true });
+      return () => { scroller.removeEventListener('scroll', check); scroller.style.overflowAnchor = prevAnchor; };
+    }, [showComments]);
 
     const handleLike = async (e) => {
       e.stopPropagation();
@@ -25,6 +82,7 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
       }
       
       setPost({ ...post, likes: updatedLikes });
+      if (window.HCSound) (isCurrentlyLiked ? window.HCSound.unlike() : window.HCSound.like());
       
       toggleNewsLike(post.objectId, user.regNumber).then(() => {
         onRefresh();
@@ -51,6 +109,7 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
         const updatedComments = [...(post.comments || []), newComment];
         setPost({ ...post, comments: updatedComments });
         setComment('');
+        if (window.HCSound) window.HCSound.comment();
         
         addNewsComment(post.objectId, user.regNumber, user.name, user.profilePic, comment.trim()).then(() => {
           onRefresh();
@@ -83,6 +142,7 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
         });
         
         setPost({ ...post, comments: updatedComments });
+        if (window.HCSound) window.HCSound.comment();
         setReplyText('');
         setReplyingTo(null);
         
@@ -108,12 +168,12 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
     const sortedComments = [...(post.comments || [])].reverse();
 
     return (
-      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-4">
+      <div ref={rootRef} className="bg-white rounded-xl shadow-md overflow-hidden mb-4">
         <img src={post.image} className="w-full aspect-video object-cover" onClick={() => setShowComments(!showComments)} />
         <div className="p-4">
           <p className="text-sm mb-2">{post.description}</p>
           <div className="flex items-center gap-6 mb-3">
-            <button onClick={handleLike} className="flex items-center gap-2">
+            <button onClick={handleLike} data-no-busy="true" className="flex items-center gap-2">
               {isLiked ? (
                 <span className="text-xl">❤️</span>
               ) : (
@@ -131,7 +191,7 @@ function NewsPost({ post: initialPost, user, onRefresh }) {
             <span className="ml-auto text-xs text-gray-500 whitespace-nowrap">{formatTimestamp(post.timestamp)}</span>
           </div>
           {showComments && (
-            <div className="border-t pt-3">
+            <div ref={commentsRef} className="border-t pt-3">
               <div className="flex gap-2 mb-3">
                 <input value={comment} onChange={e => setComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleComment(e)} placeholder="Add a comment..." className="flex-1 px-3 py-2 border rounded-lg text-sm" />
                 <button onClick={handleComment} className="px-4 py-2 bg-[var(--primary-color)] text-white rounded-lg text-sm">COMMENT</button>

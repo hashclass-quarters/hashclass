@@ -2,6 +2,7 @@ function PaymentDetailsPopup({ user, onClose }) {
   const [expandedMonth, setExpandedMonth] = React.useState(null);
   const [showPaymentDetails, setShowPaymentDetails] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+  const [downloading, setDownloading] = React.useState(false);
 
 
   const handleCopyNumber = () => {
@@ -66,9 +67,57 @@ function PaymentDetailsPopup({ user, onClose }) {
 
   const monthToPay = getMonthToPay();
 
+  // the Airtel popup replaces the payment popup (only one popup at a time)
+  if (showPaymentDetails) {
+    return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-white rounded-xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold text-center mb-4" style={{ color: '#E40000' }}>Airtel Lipa Namba</h3>
+              <div className="flex justify-center mb-4">
+                <img src="assets/airtel.png" alt="Airtel" className="h-20" onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                <span style={{ display: 'none', color: '#E40000' }} className="text-4xl font-extrabold tracking-tight">airtel</span>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">PAYMENT NUMBER</p>
+                    <p className="text-lg font-bold">140576405</p>
+                  </div>
+                  <button 
+                    onClick={handleCopyNumber} 
+                    className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${copied ? 'bg-green-500 text-white' : 'text-white'}`}
+                    style={copied ? undefined : { backgroundColor: '#E40000' }}
+                  >
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">NAME</p>
+                  <p className="text-sm font-semibold">SADATI HAMISI KHALIFA</p>
+                </div>
+              </div>
+              <p className="text-sm text-center text-gray-700 mb-6">
+                Lipia kupitia namba hiyo ya Airtel na umjulishe kiongozi kuhusu malipo yako.
+              </p>
+              <button 
+                onClick={onClose} 
+                className="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90"
+                style={{ backgroundColor: '#E40000' }}
+              >
+                OKAY
+              </button>
+            </div>
+          </div>
+        
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl p-6 max-w-sm mx-4 w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-xl p-6 max-w-sm mx-4 w-full max-h-[80vh] overflow-y-auto relative" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} aria-label="Close" data-no-busy="true" className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+        </button>
         <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
           <div className="icon-dollar-sign text-3xl text-green-600"></div>
         </div>
@@ -147,80 +196,16 @@ function PaymentDetailsPopup({ user, onClose }) {
             {monthToPay ? `PAY FOR MONTH ${monthToPay}` : 'ALL MONTHS PAID'}
           </button>
           <button 
-            onClick={() => {
-              // Creating a temporary container to render the statement and download it
-              const container = document.createElement('div');
-              container.style.position = 'fixed';
-              container.style.left = '-9999px';
-              document.body.appendChild(container);
-              
-              const root = ReactDOM.createRoot(container);
-              root.render(
-                <FinancialStatement 
-                  user={user} 
-                  onClose={() => {
-                    document.body.removeChild(container);
-                  }} 
-                />
-              );
-              
-              // We need to wait for it to render then trigger download
-              setTimeout(() => {
-                const downloadBtn = container.querySelector('[data-download-btn]');
-                if (downloadBtn) downloadBtn.click();
-                setTimeout(() => {
-                  root.unmount();
-                  if (container.parentNode) document.body.removeChild(container);
-                }, 1000);
-              }, 500);
-            }} 
+            onClick={() => setDownloading(true)}
+            disabled={downloading}
+            data-no-busy="true"
             className="w-full flex items-center justify-center gap-2 border-2 border-[var(--primary-color)] text-[var(--primary-color)] py-3 rounded-lg font-semibold hover:bg-[var(--secondary-color)]"
           >
-            <div className="icon-download text-lg"></div>
-            DOWNLOAD STATEMENT
+            {downloading ? <span className="hc-spin" style={{display:'inline-block',width:18,height:18,border:'2px solid currentColor',borderTopColor:'transparent',borderRadius:'50%',animation:'hcspin .7s linear infinite'}}></span> : <div className="icon-download text-lg"></div>}
+            {downloading ? 'PREPARING...' : 'DOWNLOAD STATEMENT'}
           </button>
         </div>
-        {showPaymentDetails && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowPaymentDetails(false)}>
-            <div className="bg-white rounded-xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold text-center mb-4" style={{ color: '#E40000' }}>Airtel Lipa Namba</h3>
-              <div className="flex justify-center mb-4">
-                <img src="assets/airtel.png" alt="Airtel" className="h-20" onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
-                <span style={{ display: 'none', color: '#E40000' }} className="text-4xl font-extrabold tracking-tight">airtel</span>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">PAYMENT NUMBER</p>
-                    <p className="text-lg font-bold">140576405</p>
-                  </div>
-                  <button 
-                    onClick={handleCopyNumber} 
-                    className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${copied ? 'bg-green-500 text-white' : 'text-white'}`}
-                    style={copied ? undefined : { backgroundColor: '#E40000' }}
-                  >
-                    {copied ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">NAME</p>
-                  <p className="text-sm font-semibold">SADATI HAMISI KHALIFA</p>
-                </div>
-              </div>
-              <p className="text-sm text-center text-gray-700 mb-6">
-                Lipia kupitia namba hiyo ya Airtel na umjulishe kiongozi kuhusu malipo yako.
-              </p>
-              <button 
-                onClick={() => { setShowPaymentDetails(false); onClose(); }} 
-                className="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90"
-                style={{ backgroundColor: '#E40000' }}
-              >
-                OKAY
-              </button>
-            </div>
-          </div>
-        )}
-
+        {downloading && <FinancialStatement user={user} autoDownload onClose={() => setDownloading(false)} />}
       </div>
     </div>
   );

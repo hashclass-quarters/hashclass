@@ -1,4 +1,4 @@
-function FinancialStatement({ user, onClose }) {
+function FinancialStatement({ user, onClose, autoDownload }) {
   try {
     const statementRef = React.useRef(null);
 
@@ -35,6 +35,7 @@ function FinancialStatement({ user, onClose }) {
 
     const downloadPDF = async () => {
       try {
+        if (!window.html2canvas || !window.jspdf) throw new Error('PDF tools did not load');
         const element = statementRef.current;
         const downloadBtn = element.querySelector('[data-download-btn]');
         
@@ -68,11 +69,17 @@ function FinancialStatement({ user, onClose }) {
         console.error('PDF generation error:', error);
         alert('Failed to generate PDF. Please try again.');
       }
+      if (autoDownload && onClose) onClose();
     };
 
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-        <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    // hidden mode: build the statement off-screen, save the PDF, then close
+    React.useEffect(() => {
+      if (!autoDownload) return;
+      const t = setTimeout(downloadPDF, 700);
+      return () => clearTimeout(t);
+    }, []);
+
+    const renderStatement = () => (
           <div ref={statementRef} className="p-8 bg-white" style={{width: '210mm', minHeight: '297mm'}}>
             <div className="flex justify-between items-start mb-8">
               <div className="flex items-center gap-4">
@@ -178,6 +185,20 @@ function FinancialStatement({ user, onClose }) {
               </div>
             </div>
           </div>
+    );
+
+    if (autoDownload) {
+      return (
+        <div style={{ position: 'fixed', left: '-10000px', top: 0, zIndex: -1, pointerEvents: 'none' }} aria-hidden="true">
+          {renderStatement()}
+        </div>
+      );
+    }
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          {renderStatement()}
         </div>
       </div>
     );

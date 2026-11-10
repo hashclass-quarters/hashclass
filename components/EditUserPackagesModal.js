@@ -5,19 +5,20 @@ function EditUserPackagesModal({ user, onClose, onSave }) {
     const [year, setYear] = React.useState(STUDY_YEARS.includes(user.year) ? user.year : 'FIRST YEAR');
     const [loading, setLoading] = React.useState(false);
 
-    const packages = getPackagesForYear(year);
-
     React.useEffect(() => {
       const list = (user.lessonPackages && user.lessonPackages.length > 0) ? user.lessonPackages : (user.lessonPackage ? [user.lessonPackage] : []);
-      const own = getOwnCoursePackages('THIRD YEAR').map(o => o.id);
-      setOwnIds(list.filter(p => own.includes(p.id)).map(p => p.id));
-      const carry = list.find(p => !own.includes(p.id));
+      const y = STUDY_YEARS.includes(user.year) ? user.year : 'FIRST YEAR';
+      const hasCarryFlag = isMultiPackageYear(y);
+      const carry = hasCarryFlag ? list.find(p => p.carryOver) : null;
+      setOwnIds(list.filter(p => p !== carry).map(p => p.id));
       setSelectedId(carry ? carry.id : '');
     }, [user]);
 
     const multi = isMultiPackageYear(year);
     const ownPackages = getOwnCoursePackages(year);
-    const chosenIds = (multi ? ownIds.filter(id => ownPackages.some(o => o.id === id)) : []).concat(selectedId ? [selectedId] : []);
+    const carryPackages = getCarryOverPackages(year);
+    const checkbox = ownCoursesAreCheckbox(year);
+    const chosenIds = ownIds.filter(id => ownPackages.some(o => o.id === id)).concat(multi && selectedId ? [selectedId] : []);
     const chosen = buildSavedPackages(year, chosenIds);
     const selected = chosen.length > 0 ? chosen[0] : null;
     const totalPrice = chosen.reduce((sum, p) => sum + p.price, 0);
@@ -53,39 +54,42 @@ function EditUserPackagesModal({ user, onClose, onSave }) {
             {STUDY_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
 
-          {multi && ownPackages.map(o => (
-            <label key={o.id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 mb-3">
-              <input type="checkbox" checked={ownIds.includes(o.id)} onChange={() => setOwnIds(ownIds.includes(o.id) ? ownIds.filter(i => i !== o.id) : ownIds.concat(o.id))} className="w-5 h-5 accent-[var(--primary-color)]" />
-              <div className="flex-1">
-                <p className="font-semibold">{o.name}</p>
-                <p className="text-sm text-[var(--primary-color)]">TZS {o.price.toLocaleString()}</p>
-              </div>
-            </label>
-          ))}
-          <p className="text-sm font-semibold text-gray-700 mb-2">{packageSectionTitle(year)}</p>
-          {multi && (
-            <label className="flex items-center gap-3 p-2 mb-2 text-sm text-gray-500 cursor-pointer">
-              <input type="radio" name="editLessonPackage" checked={selectedId === ''} onChange={() => setSelectedId('')} className="w-4 h-4 accent-[var(--primary-color)]" />
-              No carry over package
-            </label>
-          )}
+          <p className="text-sm font-semibold text-gray-700 mb-2">Lesson Package</p>
           <div className="space-y-2 mb-4">
-            {packages.map(pkg => (
-              <label key={pkg.id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                <input 
-                  type="radio"
-                  name="editLessonPackage"
-                  checked={selectedId === pkg.id}
-                  onChange={() => setSelectedId(pkg.id)}
-                  className="w-5 h-5 accent-[var(--primary-color)]"
-                />
-                <div className="flex-1">
-                  <p className="font-semibold">{pkg.name}</p>
-                  <p className="text-sm text-[var(--primary-color)]">TZS {pkg.price.toLocaleString()}</p>
-                </div>
-              </label>
-            ))}
+            {ownPackages.map(o => {
+              const on = ownIds.includes(o.id);
+              const toggle = () => setOwnIds(checkbox ? (on ? ownIds.filter(i => i !== o.id) : ownIds.concat(o.id)) : (on && multi ? [] : [o.id]));
+              return (
+                <label key={o.id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input type={checkbox ? 'checkbox' : 'radio'} name="editOwnPackage" checked={on} onChange={() => {}} onClick={toggle} className="w-5 h-5 accent-[var(--primary-color)]" />
+                  <div className="flex-1">
+                    <p className="font-semibold">{o.name}</p>
+                    <p className="text-sm text-[var(--primary-color)]">TZS {o.price.toLocaleString()}</p>
+                  </div>
+                </label>
+              );
+            })}
           </div>
+          {multi && (
+            <div>
+              <p className="text-sm font-semibold text-gray-700 mb-2">Carry Over Courses</p>
+              <label className="flex items-center gap-3 p-2 mb-2 text-sm text-gray-500 cursor-pointer">
+                <input type="radio" name="editLessonPackage" checked={selectedId === ''} onChange={() => setSelectedId('')} className="w-4 h-4 accent-[var(--primary-color)]" />
+                No carry over package
+              </label>
+              <div className="space-y-2 mb-4">
+                {carryPackages.map(pkg => (
+                  <label key={pkg.id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input type="radio" name="editLessonPackage" checked={selectedId === pkg.id} onChange={() => setSelectedId(pkg.id)} className="w-5 h-5 accent-[var(--primary-color)]" />
+                    <div className="flex-1">
+                      <p className="font-semibold">{pkg.name}</p>
+                      <p className="text-sm text-[var(--primary-color)]">TZS {pkg.price.toLocaleString()}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="border-t pt-3 mb-4">
             <div className="flex justify-between items-center">

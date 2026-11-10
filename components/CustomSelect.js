@@ -67,7 +67,10 @@ function CustomSelect({ value, onChange, options, placeholder, icon, error, allo
         className={`w-full ${icon ? 'pl-11' : 'pl-4'} pr-10 py-3 rounded-xl border-2 text-left ${error ? 'border-red-500' : (open ? 'border-[var(--primary-color)]' : 'border-gray-200')} focus:outline-none focus:border-[var(--primary-color)] transition-colors bg-white shadow-sm relative`}
         style={{ minHeight: 48 }}
       >
-        <span className={`block truncate ${current ? 'text-gray-900' : 'text-gray-400'}`}>{current ? current.label : (placeholder || 'Select')}</span>
+        <span className={`flex items-center justify-between gap-2 ${current ? 'text-gray-900' : 'text-gray-400'}`}>
+          <span className="truncate">{current ? current.label : (placeholder || 'Select')}</span>
+          {current && current.right && <span className="shrink-0 text-sm font-semibold text-[#1D3FD0] whitespace-nowrap">{current.right}</span>}
+        </span>
         <svg className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`, transition: 'transform .2s' }}>
           <path d="M5 7.5l5 5 5-5" stroke="#1D3FD0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

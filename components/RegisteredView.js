@@ -16,7 +16,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
     const [showFinancialStatement, setShowFinancialStatement] = React.useState(null);
     const [newUser, setNewUser] = React.useState({
       regNumber: '', name: '', course: '', year: '',
-      email: '', phone: '', password: '', lessonPackageId: '', ownCourse: false
+      email: '', phone: '', password: '', lessonPackageId: '', ownCourse: false, ownPackageId: ''
     });
 
 
@@ -244,7 +244,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
         return;
       }
 
-      const ids = (newUser.ownCourse ? getOwnCoursePackages(newUser.year).map(o => o.id) : []).concat(newUser.lessonPackageId ? [newUser.lessonPackageId] : []);
+      const ids = (ownCoursesAreCheckbox(newUser.year) ? (newUser.ownCourse ? getOwnCoursePackages(newUser.year).map(o => o.id) : []) : (newUser.ownPackageId ? [newUser.ownPackageId] : [])).concat(isMultiPackageYear(newUser.year) && newUser.lessonPackageId ? [newUser.lessonPackageId] : []);
       const selectedPackages = buildSavedPackages(newUser.year, ids);
       if (selectedPackages.length === 0) {
         setAlert({ message: 'Please select a lesson package', type: 'error' });
@@ -277,7 +277,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
       }
       setNewUser({
         regNumber: '', name: '', course: '', year: '',
-        email: '', phone: '', password: '', lessonPackageId: '', ownCourse: false
+        email: '', phone: '', password: '', lessonPackageId: '', ownCourse: false, ownPackageId: ''
       });
       setShowAddForm(false);
       onRefresh();
@@ -486,7 +486,7 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                 <input value={newUser.regNumber} onChange={e => setNewUser({...newUser, regNumber: e.target.value})} placeholder="Registration Number" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} placeholder="Full Name" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.course} onChange={e => setNewUser({...newUser, course: e.target.value})} placeholder="Course" className="w-full px-3 py-2 border rounded-lg text-sm" />
-                <select value={newUser.year} onChange={e => setNewUser({...newUser, year: e.target.value, lessonPackageId: '', ownCourse: false})} className="w-full px-3 py-2 border rounded-lg text-sm">
+                <select value={newUser.year} onChange={e => setNewUser({...newUser, year: e.target.value, lessonPackageId: '', ownCourse: false, ownPackageId: ''})} className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select Year of Study</option>
                   {STUDY_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
@@ -494,25 +494,33 @@ function RegisteredView({ users, onEdit, onRefresh }) {
                 <input value={newUser.phone} onChange={e => setNewUser({...newUser, phone: e.target.value})} placeholder="Phone" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} placeholder="Password" className="w-full px-3 py-2 border rounded-lg text-sm" type="password" />
                 <div>
-                  {isMultiPackageYear(newUser.year) && getOwnCoursePackages(newUser.year).map(o => (
+                  {ownCoursesAreCheckbox(newUser.year) ? getOwnCoursePackages(newUser.year).map(o => (
                     <label key={o.id} className="flex items-center gap-2 mb-2 text-sm cursor-pointer">
                       <input type="checkbox" checked={!!newUser.ownCourse} onChange={e => setNewUser({...newUser, ownCourse: e.target.checked})} className="w-4 h-4" />
                       <span className="font-semibold">{o.name}</span> <span className="text-gray-600">- TZS {o.price.toLocaleString()}/month</span>
                     </label>
-                  ))}
-                  <label className="block text-sm font-medium mb-1">{packageSectionTitle(newUser.year)}</label>
-                  <select 
-                    value={newUser.lessonPackageId} 
-                    onChange={e => setNewUser({...newUser, lessonPackageId: e.target.value})} 
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
-                  >
-                    <option value="">{newUser.year ? 'Select a package' : 'Select the year of study first'}</option>
-                    {getPackagesForYear(newUser.year).map(pkg => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} - TZS {pkg.price.toLocaleString()}/month
-                      </option>
-                    ))}
-                  </select>
+                  )) : (
+                    <div className="mb-2">
+                      <label className="block text-sm font-medium mb-1">Lesson Package</label>
+                      <select value={newUser.ownPackageId} onChange={e => setNewUser({...newUser, ownPackageId: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm">
+                        <option value="">{newUser.year ? (isMultiPackageYear(newUser.year) ? 'No lesson package' : 'Select a package') : 'Select the year of study first'}</option>
+                        {getOwnCoursePackages(newUser.year).map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>{pkg.name} - TZS {pkg.price.toLocaleString()}/month</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {isMultiPackageYear(newUser.year) && (
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Carry Over Courses</label>
+                      <select value={newUser.lessonPackageId} onChange={e => setNewUser({...newUser, lessonPackageId: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm">
+                        <option value="">No carry over package</option>
+                        {getCarryOverPackages(newUser.year).map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>{pkg.name} - TZS {pkg.price.toLocaleString()}/month</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2 mt-4">

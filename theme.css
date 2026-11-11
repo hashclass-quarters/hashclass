@@ -60,3 +60,6 @@ html.hc-admin-page{font-size:13px}
 @keyframes hcdot{0%,70%,100%{transform:translateY(0);opacity:.35}35%{transform:translateY(-4px);opacity:1}}
 .hc-typing{animation:hcfade .3s ease-out}
 @keyframes hcfade{from{opacity:0}to{opacity:1}}
+
+/* phone app bars: one flat colour, identical to the phone status bar (theme-color #1230B5) */
+.hc-bar{background:#1230B5!important}

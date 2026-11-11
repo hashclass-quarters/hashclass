@@ -50,7 +50,7 @@ if (fs.existsSync(path.join(SRC, 'pwa'))) {
   fs.copyFileSync(path.join(SRC, 'pwa', 'sw.js'), path.join(OUT, 'sw.js'));                       // root scope
   fs.copyFileSync(path.join(SRC, 'pwa', 'manifest.webmanifest'), path.join(OUT, 'manifest.webmanifest'));
 }
-const PWA_TAGS = '<link rel="manifest" href="/manifest.webmanifest">\n    <meta name="theme-color" content="#1D3FD0">\n' +
+const PWA_TAGS = '<link rel="manifest" href="/manifest.webmanifest">\n    <meta name="theme-color" content="#1230B5">\n' +
   '    <meta name="mobile-web-app-capable" content="yes">\n    <meta name="apple-mobile-web-app-capable" content="yes">\n' +
   '    <meta name="apple-mobile-web-app-title" content="HashCLASS">\n    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png">\n' +
   '    <script>if("serviceWorker"in navigator&&location.protocol!=="file:")addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})})</script>\n';

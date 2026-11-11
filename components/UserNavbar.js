@@ -41,7 +41,7 @@ function UserNavbar({ menuOpen, setMenuOpen, onLogout, onMenuClick, showRecordOp
 
     return (
       <>
-        <div className="hc-grad shadow-lg px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+        <div className="hc-bar shadow-lg px-4 py-3 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-3">
             <button onClick={() => setMenuOpen(!menuOpen)} className="p-2">
               <div className="icon-menu text-2xl text-white"></div>

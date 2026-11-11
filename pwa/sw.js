@@ -1,6 +1,6 @@
 // HashCLASS service worker: lets the app install, and keeps the app shell available when the network is slow.
 // Data (Supabase) is never cached.
-const CACHE = 'hashclass-v1';
+const CACHE = 'hashclass-v2';
 const OFFLINE_URLS = ['/index.html', '/welcome.html', '/theme.css', '/pwa/icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(OFFLINE_URLS).catch(() => {})).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

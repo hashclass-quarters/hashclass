@@ -42,6 +42,8 @@ fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
 // static files
 for (const f of ['sitemap.xml', 'theme.css']) if (fs.existsSync(path.join(SRC, f))) fs.copyFileSync(path.join(SRC, f), path.join(OUT, f));
 if (fs.existsSync(path.join(SRC, 'assets'))) fs.cpSync(path.join(SRC, 'assets'), path.join(OUT, 'assets'), { recursive: true });
+// files that must be served from /.well-known (e.g. assetlinks.json for the Android app)
+if (fs.existsSync(path.join(SRC, '.well-known'))) fs.cpSync(path.join(SRC, '.well-known'), path.join(OUT, '.well-known'), { recursive: true });
 // installable app (PWA): manifest, service worker and icons
 if (fs.existsSync(path.join(SRC, 'pwa'))) {
   fs.cpSync(path.join(SRC, 'pwa'), path.join(OUT, 'pwa'), { recursive: true });

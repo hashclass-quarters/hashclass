@@ -41,7 +41,7 @@ function UserNavbar({ menuOpen, setMenuOpen, onLogout, onMenuClick, showRecordOp
 
     return (
       <>
-        <div className="hc-bar shadow-lg px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+        <div className="hc-bar shadow-lg px-4 flex items-center justify-between sticky top-0 z-40" style={{ height: 68 }}>
           <div className="flex items-center gap-3">
             <button onClick={() => setMenuOpen(!menuOpen)} className="p-2">
               <div className="icon-menu text-2xl text-white"></div>
@@ -53,8 +53,8 @@ function UserNavbar({ menuOpen, setMenuOpen, onLogout, onMenuClick, showRecordOp
         {menuOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setMenuOpen(false)}>
             <div className="w-64 bg-white h-full shadow-xl flex flex-col" onClick={e => e.stopPropagation()}>
-              <div className="p-6 hc-grad flex items-center gap-3">
-                <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-12 h-12" />
+              <div className="hc-bar px-4 flex items-center gap-3 shrink-0" style={{ height: 68 }}>
+                <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-11 h-11 object-contain" />
                 <div>
                   <h2 className="hc-brand text-xl font-extrabold text-white">Hash<span className="gold">CLASS</span></h2>
                   <p className="text-xs italic" style={{ color: '#FFD24A' }}>The Golden Minds</p>

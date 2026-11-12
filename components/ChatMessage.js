@@ -31,9 +31,11 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
         {showDeleteMenu && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowDeleteMenu(false)}>
             <div className="bg-white rounded-xl p-4 w-64 mx-4" onClick={e => e.stopPropagation()}>
-              <button onClick={() => { setShowDeleteMenu(false); setShowViewers(true); }} className="w-full py-3 text-left border-b flex items-center gap-2">
-                <div className="icon-eye text-base text-[var(--primary-color)]"></div> Viewers
-              </button>
+              {(isOwnMessage || currentUser.isAdmin) && (
+                <button onClick={() => { setShowDeleteMenu(false); setShowViewers(true); }} className="w-full py-3 text-left border-b flex items-center gap-2">
+                  <div className="icon-eye text-base text-[var(--primary-color)]"></div> Viewers
+                </button>
+              )}
               <button onClick={() => { onDelete(message.id, false); setShowDeleteMenu(false); }} className="w-full py-3 text-left border-b">Delete for me</button>
               {isOwnMessage && (
                 <button onClick={() => { onDelete(message.id, true); setShowDeleteMenu(false); }} className="w-full py-3 text-left text-red-600">Delete for everyone</button>
@@ -131,7 +133,7 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
         return null;
       }
       
-      return <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>;
+      return <p className="leading-snug whitespace-pre-wrap break-words" style={{ fontSize: '12px' }}>{message.content}</p>;
     };
 
     const isSingleEmoji = message.type === 'text' && isOnlyEmoji(message.content);
@@ -157,41 +159,44 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
     }
 
     const isCEO = isAdminMsg;
-    const ceoStyle = 'bg-gradient-to-r from-yellow-300 to-yellow-500 text-gray-900 border-2 border-yellow-500 shadow-lg';
+    const ceoStyle = 'text-[#0A1A7A]';
+    const ceoCss = { background: 'linear-gradient(180deg,#FFFFFF 0%,#EAF0FF 100%)', border: '2.5px solid #1230B5', boxShadow: '0 6px 18px rgba(18,48,181,.35)', borderRadius: '16px 16px 16px 4px', overflow: 'hidden' };
 
     return (
       <>
         <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${message.isOptimistic ? 'opacity-60' : ''}`} data-message-id={message.id}>
           <div 
             className={`max-w-[75%] ${isCEO ? ceoStyle : (isOwnMessage ? 'bg-[var(--primary-color)] text-white' : 'bg-white text-gray-800')} rounded-lg p-2 shadow-sm transition-transform duration-200`}
-            style={{ transform: `translateX(${swipeOffset}px)` }}
+            style={{ transform: `translateX(${swipeOffset}px)`, ...(isCEO ? ceoCss : null) }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
             {isCEO ? (
-              <div className="flex items-center gap-2 mb-1">
-                <img src="assets/logo.png" alt="HashCLASS" className="w-8 h-8 rounded-full flex-shrink-0 object-contain bg-white border border-yellow-600" />
-                <p className="text-xs font-extrabold text-yellow-900">HashCLASS CEO</p>
+              <div className="flex items-center gap-2 px-2 py-1.5 mb-1.5" style={{ background: 'linear-gradient(90deg,#0A1A7A,#1230B5)', margin: '-8px -8px 6px -8px' }}>
+                <img src="assets/logo.png" alt="HashCLASS" className="w-8 h-8 rounded-full flex-shrink-0 object-contain bg-white" style={{ boxShadow: '0 0 0 2px #fff' }} />
+                <p className="font-extrabold text-white tracking-wide flex items-center gap-1.5" style={{ fontSize: '10.5px' }}>HashCLASS CEO
+                  <svg width="18" height="18" viewBox="0 0 18 18" style={{ display: 'block', flexShrink: 0 }} aria-label="Verified"><circle cx="9" cy="9" r="9" fill="#fff"/><path d="M5 9.3L7.8 12L13 6.3" fill="none" stroke="#1230B5" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </p>
               </div>
             ) : !isOwnMessage ? (
               <div className="flex items-center gap-2 mb-1">
                 <img src={message.userPic || 'https://via.placeholder.com/40'} alt={displayName} className="w-8 h-8 rounded-full flex-shrink-0 object-cover" />
-                <p className="text-xs font-bold text-[var(--primary-color)]">{displayName}</p>
+                <p className="font-bold text-[var(--primary-color)]" style={{ fontSize: '10px' }}>{displayName}</p>
               </div>
             ) : (
               <div className="flex items-center gap-2 mb-1">
                 <img src={message.userPic || currentUser.profilePic} alt="You" className="w-8 h-8 rounded-full flex-shrink-0 object-cover" />
-                <p className="text-xs font-bold text-white opacity-90">You</p>
+                <p className="font-bold text-white opacity-90" style={{ fontSize: '10px' }}>You</p>
               </div>
             )}
       {message.replyTo && (
         <div 
           onClick={() => onReplyClick && onReplyClick(message.replyTo.id)}
-          className={`mb-2 p-2 rounded-lg text-xs cursor-pointer border-l-4 ${isOwnMessage ? 'border-white' : 'border-[var(--primary-color)]'}`}
-          style={{ backgroundColor: isOwnMessage ? 'rgba(255, 255, 255, 0.3)' : 'rgba(29, 63, 208, 0.25)' }}
+          className={`mb-2 p-2 rounded-lg cursor-pointer border-l-4 ${isOwnMessage ? 'border-white' : 'border-[var(--primary-color)]'}`}
+          style={{ fontSize: '10px', backgroundColor: isOwnMessage ? 'rgba(255, 255, 255, 0.3)' : 'rgba(29, 63, 208, 0.25)' }}
         >
-                <p className="font-semibold text-xs opacity-75">{message.replyTo.userName}</p>
+                <p className="font-semibold opacity-75" style={{ fontSize: '10px' }}>{message.replyTo.userName}</p>
                 {message.replyTo.type === 'image' ? (
                   <div className="flex items-center gap-1">
                     <div className="icon-image text-xs"></div>
@@ -208,7 +213,7 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
                     <span className="text-xs opacity-75">{message.replyTo.fileName}</span>
                   </div>
                 ) : (
-                  <p className="text-xs opacity-75 truncate">{message.replyTo.content.substring(0, 40)}</p>
+                  <p className="opacity-75 truncate" style={{ fontSize: '10px' }}>{message.replyTo.content.substring(0, 40)}</p>
                 )}
               </div>
             )}
@@ -217,7 +222,7 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
                 {renderContent()}
               </div>
               <div className={`flex items-center gap-1 flex-shrink-0 self-end text-xs ${isOwnMessage ? 'opacity-75' : 'text-gray-500'}`}>
-                <span className="text-xs whitespace-nowrap">{new Date(message.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                <span className="whitespace-nowrap" style={{ fontSize: '9px' }}>{new Date(message.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
               </div>
             </div>
           </div>

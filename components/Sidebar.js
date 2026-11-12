@@ -16,8 +16,8 @@ function Sidebar({ activeView, setActiveView, onLogout, mobile, open, onClose })
     const pick = (id, href) => { if (href) { window.location.href = href; return; } setActiveView(id); if (mobile && onClose) onClose(); };
     const box = (
       <div className={mobile ? 'w-72 max-w-[85vw] h-full bg-white shadow-2xl flex flex-col' : 'w-56 bg-white shadow-lg flex flex-col'} data-name="sidebar" data-file="components/Sidebar.js" onClick={mobile ? (e) => e.stopPropagation() : undefined}>
-        <div className="p-4 hc-grad" style={{ borderBottom: '4px solid #F5B400' }}>
-          <div className="flex items-center gap-2">
+        <div className={mobile ? 'hc-bar px-3 flex items-center shrink-0' : 'p-4 hc-grad'} style={mobile ? { height: 64, borderBottom: '3px solid #F5B400' } : { borderBottom: '4px solid #F5B400' }}>
+          <div className="flex items-center gap-2 w-full">
             <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-11 h-11 object-contain" />
             <div className="flex-1">
               <h2 className="hc-brand font-extrabold text-lg text-white leading-tight">Hash<span className="gold">CLASS</span></h2>

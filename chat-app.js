@@ -43,11 +43,17 @@ function ChatApp() {
       document.head.appendChild(st);
       let last = 0;
       const upd = () => {
-        const h = Math.round(v ? v.height : window.innerHeight), top = Math.round(v ? v.offsetTop : 0);
-        setVv({ h, top });
-        if (last && h < last - 80) { const c = messagesContainerRef.current; if (c) c.scrollTop = c.scrollHeight; }
+        // the app bar never moves: only the visible height changes, and the message list keeps what the person was looking at
+        const h = Math.round(v ? v.height + v.offsetTop : window.innerHeight);
+        const c = messagesContainerRef.current;
+        const before = c ? c.scrollTop : 0;
+        setVv({ h, top: 0 });
+        if (last && Math.abs(h - last) > 60 && c) {
+          const d = last - h;
+          requestAnimationFrame(() => { c.scrollTop = Math.max(0, before + d); });
+        }
         last = h;
-        if (top) window.scrollTo(0, 0);
+        if (window.scrollY) window.scrollTo(0, 0);
       };
       upd();
       if (v) { v.addEventListener('resize', upd); v.addEventListener('scroll', upd); }
@@ -250,7 +256,7 @@ function ChatApp() {
     if (!user) return null;
 
     return (
-      <div className="flex flex-col overflow-hidden" style={{ backgroundColor: '#E8EEFF', position: 'fixed', left: 0, right: 0, top: vv.h ? vv.top : 0, height: vv.h ? vv.h + 'px' : '100dvh' }}>
+      <div className="flex flex-col overflow-hidden" style={{ backgroundColor: '#E8EEFF', position: 'fixed', left: 0, right: 0, top: 0, height: vv.h ? vv.h + 'px' : '100dvh' }}>
         {connectionError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 fixed top-0 left-0 right-0 z-50 flex items-center gap-2">
             <div className="icon-circle-alert text-lg"></div>

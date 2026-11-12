@@ -17,10 +17,10 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Popups on the student dashboard have no dark layer behind them (the clear layer still closes them on tap).
+// Popups on the student dashboard: dark + blurred layer behind them (tapping it closes them).
 (function () {
   const st = document.createElement('style');
-  st.textContent = '.fixed.inset-0.bg-black.flex{background:transparent!important;--tw-bg-opacity:0!important}' +
+  st.textContent = '.fixed.inset-0.bg-black.flex{background:rgba(8,16,70,.5)!important;--tw-bg-opacity:1!important}' +
     '.fixed.inset-0.bg-black.flex>div{box-shadow:0 18px 50px rgba(15,27,77,.28),0 0 0 1px rgba(29,63,208,.12)!important}';
   document.head.appendChild(st);
 })();

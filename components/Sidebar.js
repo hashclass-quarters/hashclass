@@ -12,10 +12,19 @@ function Sidebar({ activeView, setActiveView, onLogout, mobile, open, onClose })
       { id: 'announcements', icon: 'megaphone', label: 'Announcements' }
     ];
 
-    if (mobile && !open) return null;
+    const [mounted, setMounted] = React.useState(!!open);
+    const [shown, setShown] = React.useState(false);
+    React.useEffect(() => {
+      if (!mobile) return;
+      if (open) { setMounted(true); const r = requestAnimationFrame(() => requestAnimationFrame(() => setShown(true))); return () => cancelAnimationFrame(r); }
+      setShown(false);
+      const t = setTimeout(() => setMounted(false), 280);
+      return () => clearTimeout(t);
+    }, [open, mobile]);
+    if (mobile && !mounted) return null;
     const pick = (id, href) => { if (href) { window.location.href = href; return; } setActiveView(id); if (mobile && onClose) onClose(); };
     const box = (
-      <div className={mobile ? 'w-72 max-w-[85vw] h-full bg-white shadow-2xl flex flex-col' : 'w-56 bg-white shadow-lg flex flex-col'} data-name="sidebar" data-file="components/Sidebar.js" onClick={mobile ? (e) => e.stopPropagation() : undefined}>
+      <div className={mobile ? 'w-72 max-w-[85vw] h-full bg-white shadow-2xl flex flex-col' : 'w-56 bg-white shadow-lg flex flex-col'} data-name="sidebar" data-file="components/Sidebar.js" style={mobile ? { transform: shown ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform .28s cubic-bezier(.22,.8,.3,1)' } : undefined} onClick={mobile ? (e) => e.stopPropagation() : undefined}>
         <div className={mobile ? 'hc-bar px-3 flex items-center shrink-0' : 'p-4 hc-grad'} style={mobile ? { height: 64, borderBottom: '3px solid #F5B400' } : { borderBottom: '4px solid #F5B400' }}>
           <div className="flex items-center gap-2 w-full">
             <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-11 h-11 object-contain" />
@@ -54,7 +63,7 @@ function Sidebar({ activeView, setActiveView, onLogout, mobile, open, onClose })
       </div>
     );
     if (!mobile) return box;
-    return <div className="fixed inset-0 z-50 flex" style={{ background: 'rgba(8,16,70,.55)' }} onClick={onClose}>{box}</div>;
+    return <div className="fixed inset-0 z-50 flex" style={{ background: shown ? 'rgba(8,16,70,.55)' : 'rgba(8,16,70,0)', transition: 'background .28s ease' }} onClick={onClose}>{box}</div>;
   } catch (error) {
     console.error('Sidebar error:', error);
     return null;

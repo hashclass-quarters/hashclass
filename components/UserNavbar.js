@@ -1,6 +1,14 @@
 function UserNavbar({ menuOpen, setMenuOpen, onLogout, onMenuClick, showRecordOption, userName }) {
   try {
     const desktop = useIsDesktop();
+    const [mounted, setMounted] = React.useState(!!menuOpen);
+    const [shown, setShown] = React.useState(false);
+    React.useEffect(() => {
+      if (menuOpen) { setMounted(true); const r = requestAnimationFrame(() => requestAnimationFrame(() => setShown(true))); return () => cancelAnimationFrame(r); }
+      setShown(false);
+      const t = setTimeout(() => setMounted(false), 280);
+      return () => clearTimeout(t);
+    }, [menuOpen]);
     const menuItems = [
       { label: 'Dashboard', icon: 'layout-dashboard', clickable: true },
       { label: 'Book Lesson', icon: 'book-open', clickable: false },
@@ -50,9 +58,9 @@ function UserNavbar({ menuOpen, setMenuOpen, onLogout, onMenuClick, showRecordOp
           </div>
           <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-11 h-11 object-contain" />
         </div>
-        {menuOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setMenuOpen(false)}>
-            <div className="w-64 bg-white h-full shadow-xl flex flex-col" onClick={e => e.stopPropagation()}>
+        {mounted && (
+          <div className="fixed inset-0 z-50" style={{ background: shown ? 'rgba(8,16,70,.5)' : 'rgba(8,16,70,0)', transition: 'background .28s ease' }} onClick={() => setMenuOpen(false)}>
+            <div className="w-64 bg-white h-full shadow-xl flex flex-col" style={{ transform: shown ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform .28s cubic-bezier(.22,.8,.3,1)' }} onClick={e => e.stopPropagation()}>
               <div className="hc-bar px-4 flex items-center gap-3 shrink-0" style={{ height: 68 }}>
                 <img src="https://app.trickle.so/storage/public/images/usr_1859567910000001/8bc308c7-6235-4d78-a090-8bd032e869f0.png" alt="Logo" className="w-11 h-11 object-contain" />
                 <div>

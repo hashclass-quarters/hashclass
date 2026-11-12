@@ -29,26 +29,36 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
     const renderMenu = () => (
       <>
         {showDeleteMenu && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowDeleteMenu(false)}>
-            <div className="bg-white rounded-xl p-4 w-64 mx-4" onClick={e => e.stopPropagation()}>
-              {(isOwnMessage || currentUser.isAdmin) && (
-                <button onClick={() => { setShowDeleteMenu(false); setShowViewers(true); }} className="w-full py-3 text-left border-b flex items-center gap-2">
-                  <div className="icon-eye text-base text-[var(--primary-color)]"></div> Viewers
+          <div className="fixed inset-0 flex items-center justify-center z-50 animate-fadeIn" style={{ background: 'rgba(8,16,70,.45)', WebkitBackdropFilter: 'blur(5px)', backdropFilter: 'blur(5px)' }} onClick={() => setShowDeleteMenu(false)}>
+            <div className="w-64 mx-4 overflow-hidden" style={{ background: '#fff', borderRadius: 18, border: '2px solid #1230B5', boxShadow: '0 18px 50px rgba(10,26,122,.4)' }} onClick={e => e.stopPropagation()}>
+              <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: 'linear-gradient(90deg,#0A1A7A,#1230B5)' }}>
+                <div className="icon-message-circle text-base text-white"></div>
+                <p className="font-bold text-white" style={{ fontSize: 13 }}>Message options</p>
+              </div>
+              <div className="p-2.5 space-y-1.5">
+                {(isOwnMessage || currentUser.isAdmin) && (
+                  <button onClick={() => { setShowDeleteMenu(false); setShowViewers(true); }} className="w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-left font-semibold" style={{ fontSize: 13, background: '#EAF0FF', color: '#1230B5' }}>
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{ background: '#1230B5' }}><span className="icon-eye text-sm"></span></span> Viewers
+                  </button>
+                )}
+                <button onClick={() => { onDelete(message.id, false); setShowDeleteMenu(false); }} className="w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-left font-semibold" style={{ fontSize: 13, background: '#FFF6DB', color: '#8A5A00' }}>
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{ background: '#F5B400' }}><span className="icon-trash-2 text-sm"></span></span> Delete for me
                 </button>
-              )}
-              <button onClick={() => { onDelete(message.id, false); setShowDeleteMenu(false); }} className="w-full py-3 text-left border-b">Delete for me</button>
-              {isOwnMessage && (
-                <button onClick={() => { onDelete(message.id, true); setShowDeleteMenu(false); }} className="w-full py-3 text-left text-red-600">Delete for everyone</button>
-              )}
-              <button onClick={() => setShowDeleteMenu(false)} className="w-full py-3 text-left text-gray-500">Cancel</button>
+                {isOwnMessage && (
+                  <button onClick={() => { onDelete(message.id, true); setShowDeleteMenu(false); }} className="w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-left font-semibold" style={{ fontSize: 13, background: '#FFE9E9', color: '#C62828' }}>
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{ background: '#E53935' }}><span className="icon-trash text-sm"></span></span> Delete for everyone
+                  </button>
+                )}
+                <button onClick={() => setShowDeleteMenu(false)} className="w-full py-2 rounded-xl text-center font-semibold text-gray-500" style={{ fontSize: 13, background: '#F3F4F8' }}>Cancel</button>
+              </div>
             </div>
           </div>
         )}
         {showViewers && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowViewers(false)}>
-            <div className="bg-white rounded-xl p-4 w-80 max-w-[92vw] mx-4" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold">Viewers{viewers.length > 0 ? ` (${viewers.length})` : ''}</h3>
+          <div className="fixed inset-0 flex items-center justify-center z-50 animate-fadeIn" style={{ background: 'rgba(8,16,70,.45)', WebkitBackdropFilter: 'blur(5px)', backdropFilter: 'blur(5px)' }} onClick={() => setShowViewers(false)}>
+            <div className="bg-white p-4 w-80 max-w-[92vw] mx-4" style={{ borderRadius: 18, border: '2px solid #1230B5', boxShadow: '0 18px 50px rgba(10,26,122,.4)' }} onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-3 pb-2" style={{ borderBottom: '2px solid #EAF0FF' }}>
+                <h3 className="font-bold" style={{ color: '#1230B5' }}>Viewers{viewers.length > 0 ? ` (${viewers.length})` : ''}</h3>
                 <button onClick={() => setShowViewers(false)} aria-label="Close" className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
                 </button>
@@ -166,7 +176,7 @@ function ChatMessage({ message, currentUser, onReply, onDelete, onReplyClick }) 
       <>
         <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${message.isOptimistic ? 'opacity-60' : ''}`} data-message-id={message.id}>
           <div 
-            className={`max-w-[75%] ${isCEO ? ceoStyle : (isOwnMessage ? 'bg-[var(--primary-color)] text-white' : 'bg-white text-gray-800')} rounded-lg p-2 shadow-sm transition-transform duration-200`}
+            className={`max-w-[88%] ${isCEO ? ceoStyle : (isOwnMessage ? 'bg-[var(--primary-color)] text-white' : 'bg-white text-gray-800')} rounded-lg p-2 shadow-sm transition-transform duration-200`}
             style={{ transform: `translateX(${swipeOffset}px)`, ...(isCEO ? ceoCss : null) }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}

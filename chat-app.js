@@ -34,6 +34,26 @@ function ChatApp() {
     const [connectionError, setConnectionError] = React.useState(false);
     const messagesEndRef = React.useRef(null);
     const messagesContainerRef = React.useRef(null);
+    // keep the app bar pinned while the on-screen keyboard is open: the page is sized to the *visible* area
+    const [vv, setVv] = React.useState({ h: 0, top: 0 });
+    React.useEffect(() => {
+      const v = window.visualViewport;
+      const st = document.createElement('style');
+      st.textContent = 'html,body{overflow:hidden!important;height:100%;overscroll-behavior:none}';
+      document.head.appendChild(st);
+      let last = 0;
+      const upd = () => {
+        const h = Math.round(v ? v.height : window.innerHeight), top = Math.round(v ? v.offsetTop : 0);
+        setVv({ h, top });
+        if (last && h < last - 80) { const c = messagesContainerRef.current; if (c) c.scrollTop = c.scrollHeight; }
+        last = h;
+        if (top) window.scrollTo(0, 0);
+      };
+      upd();
+      if (v) { v.addEventListener('resize', upd); v.addEventListener('scroll', upd); }
+      window.addEventListener('resize', upd);
+      return () => { if (v) { v.removeEventListener('resize', upd); v.removeEventListener('scroll', upd); } window.removeEventListener('resize', upd); st.remove(); };
+    }, []);
 
     React.useEffect(() => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -230,7 +250,7 @@ function ChatApp() {
     if (!user) return null;
 
     return (
-      <div className="flex flex-col overflow-hidden relative" style={{ backgroundColor: '#E8EEFF', height: '100vh', height: '100dvh' }}>
+      <div className="flex flex-col overflow-hidden" style={{ backgroundColor: '#E8EEFF', position: 'fixed', left: 0, right: 0, top: vv.h ? vv.top : 0, height: vv.h ? vv.h + 'px' : '100dvh' }}>
         {connectionError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 fixed top-0 left-0 right-0 z-50 flex items-center gap-2">
             <div className="icon-circle-alert text-lg"></div>
@@ -243,7 +263,7 @@ function ChatApp() {
             </button>
           </div>
         )}
-        <div className="bg-[var(--primary-color)] text-white p-4 flex items-center gap-3 shadow-md fixed top-0 left-0 right-0 z-50" style={{ marginTop: connectionError ? '52px' : '0' }}>
+        <div className="hc-bar text-white p-4 flex items-center gap-3 shadow-md absolute top-0 left-0 right-0 z-50" style={{ marginTop: connectionError ? '52px' : '0' }}>
           <button onClick={() => window.location.href = user.isAdmin ? 'admin.html' : 'user-dashboard.html'}>
             <div className="icon-arrow-left text-xl"></div>
           </button>
@@ -477,13 +497,13 @@ function ChatApp() {
         {showScrollButton && (
           <button 
             onClick={handleScrollToBottom}
-            className="fixed right-4 bg-black text-white p-3 rounded-full shadow-lg hover:opacity-90 z-40 transition-all"
+            className="absolute right-4 bg-black text-white p-3 rounded-full shadow-lg hover:opacity-90 z-40 transition-all"
             style={{ bottom: replyingTo ? '156px' : '96px' }}
           >
             <div className="icon-chevron-down text-xl"></div>
           </button>
         )}
-        <div className="fixed bottom-0 left-0 right-0 bg-white z-50 border-t shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 bg-white z-50 border-t shadow-lg">
           <ChatInput 
             onSend={handleSend} 
             replyingTo={replyingTo}

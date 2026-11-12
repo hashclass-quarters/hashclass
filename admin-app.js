@@ -104,7 +104,7 @@ function AdminApp() {
         {phone && <Sidebar mobile open={navOpen} onClose={() => setNavOpen(false)} activeView={activeView} setActiveView={setActiveView} onLogout={handleLogout} />}
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
           {phone ? (
-            <header className="hc-bar px-3 py-2.5 flex justify-between items-center shrink-0" style={{ borderBottom: '3px solid #F5B400' }}>
+            <header className="hc-bar px-3 py-2.5 flex justify-between items-center shrink-0" style={{ height: 64, borderBottom: '3px solid #F5B400' }}>
               <div className="flex items-center gap-2 min-w-0">
                 <button onClick={() => setNavOpen(true)} aria-label="Menu" className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center"><div className="icon-menu text-2xl text-white"></div></button>
                 <div className="min-w-0">

@@ -63,3 +63,6 @@ html.hc-admin-page{font-size:13px}
 
 /* phone app bars: one flat colour, identical to the phone status bar (theme-color #1230B5) */
 .hc-bar{background:#1230B5!important}
+
+/* blur whatever is behind a popup so the popup gets the focus */
+.fixed.inset-0.bg-black.flex{-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
